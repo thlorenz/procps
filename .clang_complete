@@ -1,0 +1,3 @@
+-Ideps/procps
+-Wall
+-std=c99
