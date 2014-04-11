@@ -2,12 +2,23 @@ CWD=$(shell pwd)
 
 AR ?= ar
 CC ?= clang
+PROCPS= $(CWD)/deps/procps
+LIBPROC = $(PROCPS)/proc/libproc.a
+LIBPROC_OBJS = $(wildcard $(PROCPS)/proc/*.o)
 
-LIBPROC_A = $(CWD)/deps/procps/proc/libproc.a
+CFLAGS = -I$(PROCPS)
+# linking didn't work, using objects for now
+LDFLAGS = #-L$(LIBPROC)
 
-$(LIBPROC_A):
-	cd $(CWD)/deps/procps && $(MAKE) proc/libproc.a
-libproc: $(LIBPROC_A)
+build:
+	$(CC) $(CFLAGS) $(LIBPROC_OBJS) main.c -o main $(LDFLAGS) 
+
+run: build
+	./main
+
+$(LIBPROC):
+	cd $(PROCPS) && $(MAKE) proc/libproc.a
+libproc: $(LIBPROC)
 
 clean:
 	find . -name "*.gc*" -exec rm {} \;
