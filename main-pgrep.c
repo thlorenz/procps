@@ -568,8 +568,6 @@ static void parse_opts (int argc, char **argv)
 
 	while ((opt = getopt (argc, argv, opts)) != -1) {
 		switch (opt) {
-//		case 'D':   // FreeBSD: print info about non-matches for debugging
-//			break;
 		case 'F':   // FreeBSD: the arg is a file containing a PID to match
 			opt_pidfile = strdup (optarg);
 			++criteria_count;
@@ -580,27 +578,15 @@ static void parse_opts (int argc, char **argv)
 				usage (opt);
 			++criteria_count;
 			break;
-//		case 'I':   // FreeBSD: require confirmation before killing
-//			break;
-//		case 'J':   // Solaris: match by project ID (name or number)
-//			break;
 		case 'L':   // FreeBSD: fail if pidfile (see -F) not locked
 			opt_lock++;
 			break;
-//		case 'M':   // FreeBSD: specify core (OS crash dump) file
-//			break;
-//		case 'N':   // FreeBSD: specify alternate namelist file (for us, System.map -- but we don't need it)
-//			break;
 		case 'P':   // Solaris: match by PPID
 	  		opt_ppid = split_list (optarg, conv_num);
 			if (opt_ppid == NULL)
 				usage (opt);
 			++criteria_count;
 			break;
-//		case 'S':   // FreeBSD: don't ignore the built-in kernel tasks
-//			break;
-//		case 'T':   // Solaris: match by "task ID" (probably not a Linux task)
-//			break;
 		case 'U':   // Solaris: match by ruid/rgroup
 	  		opt_ruid = split_list (optarg, conv_uid);
 			if (opt_ruid == NULL)
@@ -610,8 +596,6 @@ static void parse_opts (int argc, char **argv)
 		case 'V':
 			fprintf(stdout, "%s (%s)\n", progname, procps_version);
 			exit(EXIT_SUCCESS);
-//		case 'c':   // Solaris: match by contract ID
-//			break;
 		case 'd':   // Solaris: change the delimiter
 			opt_delim = strdup (optarg);
 			break;
@@ -624,13 +608,6 @@ static void parse_opts (int argc, char **argv)
 				usage (opt);
 			++criteria_count;
 			break;
-//		case 'i':   // FreeBSD: ignore case. OpenBSD: withdrawn. See -I. This sucks.
-//			if (opt_case)
-//				usage (opt);
-//			opt_case = REG_ICASE;
-//			break;
-//		case 'j':   // FreeBSD: restricted to the given jail ID
-//			break;
 		case 'l':   // Solaris: long output format (pgrep only) Should require -f for beyond argv[0] maybe?
 			opt_long = 1;
 			break;
@@ -694,7 +671,7 @@ static void parse_opts (int argc, char **argv)
 		}
 	}
 
-        if (argc - optind == 1)
+  if (argc - optind == 1)
 		opt_pattern = argv[optind];
 	else if (argc - optind > 1)
 		usage (0);
