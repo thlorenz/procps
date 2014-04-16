@@ -20,7 +20,7 @@ run: build
 	./main
 
 run-pgrep: build-pgrep
-	./main-pgrep sh
+	./main-pgrep -l sh
 
 $(LIBPROC):
 	cd $(PROCPS) && $(MAKE) proc/libproc.a
