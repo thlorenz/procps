@@ -20,31 +20,66 @@ static proc_t **get_proctab() {
   return readproctab(flags);
 }
 
-v8::Handle<v8::String> GetScript(v8::Isolate* isolate);
-
 void AddFunction(v8::Isolate* isolate, v8::Handle<v8::Object> global, const char* name, v8::FunctionCallback callback) {
   using namespace v8;
   HandleScope handle_scope(isolate);
   global->Set(String::NewFromUtf8(isolate, name), FunctionTemplate::New(isolate, callback)->GetFunction());
 }
 
-class Procjs {
-  proc_t **_pt;
-  unsigned int _len;
+v8::Handle<v8::String> GetScript(v8::Isolate* isolate);
+void GetProcPid(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info);
+
+class Proc {
+  v8::Isolate *_isolate;
+  proc_t *_proc;
+
 public:
-  Procjs() {
-    refresh();
+  Proc(v8::Isolate* isolate, proc_t *proc) : _isolate(isolate), _proc(proc) {}
+
+  unsigned int Pid() const {
+    return _proc->ppid;
   }
 
-  void refresh() {
+  v8::Handle<v8::Object> Wrap() {
+    using namespace v8;
+
+    // HandleScope handle_scope(_isolate);
+    Handle<ObjectTemplate> t = ObjectTemplate::New(_isolate);
+
+    t->SetInternalFieldCount(1);
+    t->SetAccessor(String::NewFromUtf8(_isolate, "pid"), GetProcPid);
+
+    Local<Object> instance = t->NewInstance();
+    instance->SetInternalField(0, External::New(_isolate, this));
+
+    return instance;
+  }
+};
+
+class Procjs {
+  v8::Isolate *_isolate;
+  proc_t **_pt;
+  unsigned int _len;
+
+public:
+  Procjs(v8::Isolate* isolate): _isolate(isolate) {
+    Refresh();
+  }
+
+  void Refresh() {
     _pt = get_proctab();
     _len = -1;
 
     while(*(_pt + (++_len)));
   }
 
-  inline proc_t *proctab() { return _pt[0]; };
-  unsigned int length() { return _len; }
+  Proc* ProcAt(const int idx) const {
+    return new Proc(_isolate, _pt[idx]);
+  };
+
+  unsigned int Length() {
+    return _len;
+  }
 };
 
 template <typename T, typename CallbackInfo> T* Unwrap(const CallbackInfo& info) {
@@ -64,15 +99,51 @@ void GetProcjsLength(v8::Local<v8::String> property, const v8::PropertyCallbackI
   HandleScope handle_scope(isolate);
 
   Procjs* pjs = Unwrap<Procjs>(info);
-  info.GetReturnValue().Set(Number::New(isolate, pjs->length()));
+  info.GetReturnValue().Set(Number::New(isolate, pjs->Length()));
 }
+
+void GetProc(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  using namespace v8;
+  Isolate *isolate = info.GetIsolate();
+  HandleScope handle_scope(isolate);
+
+  Procjs* pjs = Unwrap<Procjs>(info);
+
+  unsigned int idx = info[0]->IsNumber() ? info[0]->Int32Value() : 0;
+  if (idx >= pjs->Length()) {
+    // todo: communicate error to JS
+    fprintf(stderr, "index %d was out of bounds, using 0 instead", idx);
+  }
+
+  Proc* proc = pjs->ProcAt(idx);
+  Handle<Object> wrapped = proc->Wrap();
+
+  info.GetReturnValue().Set(wrapped);
+}
+
+void GetProcPid(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  using namespace v8;
+  Isolate *isolate = info.GetIsolate();
+  HandleScope handle_scope(isolate);
+
+  Proc* proc= Unwrap<Proc>(info);
+  info.GetReturnValue().Set(Number::New(isolate, proc->Pid()));
+}
+
 
 v8::Handle<v8::String> GetScript(v8::Isolate* isolate) {
   string src =
     "'use strict';"
     ""
+    "var logs = [];"
+    ""
+    "function push(s) { logs.push(s) }"
+    ""
     "var pjs = new Procjs();"
-    "(function () { return pjs.length; })();"
+    "push('pid 3:' + pjs.proc(3).pid );"
+    "push('pid 30: ' + pjs.proc(30).pid );"
+    ""
+    "(function() { return logs.join('\\n') })()"
     ;
 
   const char *js = src.c_str();
@@ -87,8 +158,9 @@ void ProcjsCtor(const v8::FunctionCallbackInfo<v8::Value>& info) {
   Handle<ObjectTemplate> t = ObjectTemplate::New();
   t->SetInternalFieldCount(1);
   t->SetAccessor(String::NewFromUtf8(isolate, "length"), GetProcjsLength);
+  t->Set(String::NewFromUtf8(isolate, "proc"), FunctionTemplate::New(isolate, GetProc)->GetFunction());
 
-  Procjs *pjs = new Procjs();
+  Procjs *pjs = new Procjs(isolate);
   Local<Object> instance = t->NewInstance();
   instance->SetInternalField(0, External::New(isolate, pjs));
 
@@ -109,7 +181,7 @@ int main(void) {
   Handle<String> src = GetScript(isolate);
   Handle<Value> result = Script::Compile(src)->Run();
 
-  cout << "Result: " << *String::Utf8Value(result);
+  cout << "Result: " << endl << *String::Utf8Value(result);
   return 0;
 }
 
