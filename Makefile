@@ -1,26 +1,38 @@
-CWD=$(shell pwd)
+include v8.mk
+
+ROOT	  = $(dir $(lastword $(MAKEFILE_LIST)))
 
 AR ?= ar
 CC ?= clang
-PROCPS= $(CWD)/deps/procps
-LIBPROC = $(PROCPS)/proc/libproc.a
-LIBPROC_OBJS = $(wildcard $(PROCPS)/proc/*.o)
+CXX = clang++
+LINK = clang++
+PROCPS= $(ROOT)deps/procps/
+LIBPROC = $(PROCPS)proc/libproc.a
 
-CFLAGS = -I$(PROCPS)
-# linking didn't work, using objects for now
-LDFLAGS = #-L$(LIBPROC)
+CFLAGS = -I$(PROCPS) -I$(V8)include/
+# linking didn't work, using procps objects for now
+LDFLAGS =                                                          \
+  $(LIBPROC)                                                     \
+	-Wl,--start-group                                                \
+			$(V8)/out/$(V8_ARCH)/obj.target/third_party/icu/libicuuc.a   \
+			$(V8)/out/$(V8_ARCH)/obj.target/third_party/icu/libicui18n.a \
+			$(V8)/out/$(V8_ARCH)/obj.target/third_party/icu/libicudata.a \
+			$(V8)/out/$(V8_ARCH)/obj.target/tools/gyp/libv8_base.x64.a   \
+			$(V8)/out/$(V8_ARCH)/obj.target/tools/gyp/libv8_snapshot.a   \
+	-Wl,--end-group                                                  \
+	-lrt 
 
-build:
-	$(CC) $(CFLAGS) $(LIBPROC_OBJS) main.c -o main $(LDFLAGS) 
+build: $(LIBPROC) $(V8LIB)
+	$(CXX) $(CFLAGS) main.cc -o main $(LDFLAGS) 
 
-build-pgrep:
-	$(CC) $(CFLAGS) $(LIBPROC_OBJS) main-pgrep.c -o main-pgrep $(LDFLAGS) 
+build-print: $(LIBPROC)
+	$(CC) $(CFLAGS) print_proctab.c -o print_proctab $(LDFLAGS) 
 
 run: build
 	./main
 
-run-pgrep: build-pgrep
-	./main-pgrep -l sh
+run-print: build-print
+	./print_proctab
 
 $(LIBPROC):
 	cd $(PROCPS) && $(MAKE) proc/libproc.a
@@ -29,9 +41,9 @@ libproc: $(LIBPROC)
 clean:
 	find . -name "*.gc*" -exec rm {} \;
 	rm -rf `find . -name "*.dSYM" -print`
-	rm -f main main-pgrep
+	rm -f main print_proctab
 
 cleanall: clean
-	cd $(CWD)/deps/procps && $(MAKE) clean 
+	cd $(ROOT)deps/procps && $(MAKE) clean 
 
 .PHONY: libproc clean cleanall
