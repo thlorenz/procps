@@ -28,6 +28,7 @@ void AddFunction(v8::Isolate* isolate, v8::Handle<v8::Object> global, const char
 
 v8::Handle<v8::String> GetScript(v8::Isolate* isolate);
 void GetProcPid(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info);
+void GetProcCmd(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info);
 
 class Proc {
   v8::Isolate *_isolate;
@@ -40,6 +41,18 @@ public:
     return _proc->ppid;
   }
 
+  v8::Handle<v8::Array> Cmdline() const {
+    //v8::Array::New();
+    if (_proc->cmdline) {
+      int i = 0;
+      while (_proc->cmdline[i]) i++;
+    }
+  }
+
+  char* Cmd() const {
+    return _proc->cmd;
+  }
+
   v8::Handle<v8::Object> Wrap() {
     using namespace v8;
 
@@ -48,6 +61,7 @@ public:
 
     t->SetInternalFieldCount(1);
     t->SetAccessor(String::NewFromUtf8(_isolate, "pid"), GetProcPid);
+    t->SetAccessor(String::NewFromUtf8(_isolate, "cmd"), GetProcCmd);
 
     Local<Object> instance = t->NewInstance();
     instance->SetInternalField(0, External::New(_isolate, this));
@@ -130,6 +144,17 @@ void GetProcPid(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v
   info.GetReturnValue().Set(Number::New(isolate, proc->Pid()));
 }
 
+void GetProcCmd(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  using namespace v8;
+  Isolate *isolate = info.GetIsolate();
+  HandleScope handle_scope(isolate);
+
+  Proc* proc= Unwrap<Proc>(info);
+  info.GetReturnValue().Set(String::NewFromUtf8(isolate, proc->Cmd()));
+
+  /*Handle<Array> arr = Array::New(isolate);
+  info.GetReturnValue().Set(arr);*/
+}
 
 v8::Handle<v8::String> GetScript(v8::Isolate* isolate) {
   string src =
@@ -141,7 +166,9 @@ v8::Handle<v8::String> GetScript(v8::Isolate* isolate) {
     ""
     "var pjs = new Procjs();"
     "push('pid 3:' + pjs.proc(3).pid );"
+    "push('cmd 3:' + pjs.proc(3).cmd );"
     "push('pid 30: ' + pjs.proc(30).pid );"
+    "push('cmd 30:' + pjs.proc(30).cmd );"
     ""
     "(function() { return logs.join('\\n') })()"
     ;
