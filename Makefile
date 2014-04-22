@@ -20,6 +20,7 @@ LDFLAGS =                                                          \
 			$(V8)/out/$(V8_ARCH)/obj.target/tools/gyp/libv8_base.x64.a   \
 			$(V8)/out/$(V8_ARCH)/obj.target/tools/gyp/libv8_snapshot.a   \
 	-Wl,--end-group                                                  \
+	-lpthread																												 \
 	-lrt 
 
 build: $(LIBPROC) $(V8LIB)

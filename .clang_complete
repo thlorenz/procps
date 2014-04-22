@@ -1,4 +1,4 @@
 -Ideps/procps
 -Ideps/v8/include
 -Wall
--std=c99
+-std=C++98
