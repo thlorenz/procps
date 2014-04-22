@@ -91,6 +91,10 @@ class Procjs {
   proc_t **_pt;
   unsigned int _len;
 
+  Proc* procAt(const int idx) const {
+    return new Proc(_isolate, _pt[idx]);
+  };
+
 public:
   Procjs(v8::Isolate* isolate): _isolate(isolate) {
     Refresh();
@@ -103,9 +107,19 @@ public:
     while(*(_pt + (++_len)));
   }
 
-  Proc* ProcAt(const int idx) const {
-    return new Proc(_isolate, _pt[idx]);
-  };
+  v8::Handle<v8::Array> Procs() {
+    using namespace v8;
+    EscapableHandleScope scope(_isolate);
+
+    Local<Array> arr = Array::New(_isolate, _len);
+
+    int i = 0;
+    for (i = 0; i < _len; i++) {
+      arr->Set(Integer::New(_isolate, i), procAt(i)->Wrap());
+    }
+
+    return scope.Escape(arr);
+  }
 
   unsigned int Length() {
     return _len;
@@ -132,23 +146,15 @@ void GetProcjsLength(v8::Local<v8::String> property, const v8::PropertyCallbackI
   info.GetReturnValue().Set(Number::New(isolate, pjs->Length()));
 }
 
-void GetProc(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void GetProcs(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
   using namespace v8;
   Isolate *isolate = info.GetIsolate();
   HandleScope handle_scope(isolate);
 
   Procjs* pjs = Unwrap<Procjs>(info);
+  Handle<Array> procs = pjs->Procs();
 
-  unsigned int idx = info[0]->IsNumber() ? info[0]->Int32Value() : 0;
-  if (idx >= pjs->Length()) {
-    // todo: communicate error to JS
-    fprintf(stderr, "index %d was out of bounds, using 0 instead", idx);
-  }
-
-  Proc* proc = pjs->ProcAt(idx);
-  Handle<Object> wrapped = proc->Wrap();
-
-  info.GetReturnValue().Set(wrapped);
+  info.GetReturnValue().Set(procs);
 }
 
 void GetProcPid(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
@@ -187,11 +193,12 @@ v8::Handle<v8::String> GetScript(v8::Isolate* isolate) {
     "function push(s) { logs.push(s) }"
     ""
     "var pjs = new Procjs();"
-    "push('pid 3:' + pjs.proc(3).pid );"
-    "push('cmd 3:' + pjs.proc(3).cmd );"
-    "push('pid 30: ' + pjs.proc(30).pid );"
-    "push('cmd 30:' + pjs.proc(30).cmd );"
-    "push('cmdline 30[0]:' + pjs.proc(30).cmdline[0] );"
+    "var ps = pjs.procs;"
+    "push('pid 3:' + ps[3].pid );"
+    "push('cmd 3:' + ps[3].cmd );"
+    "push('pid 30:' + ps[30].pid );"
+    "push('cmd 30:' + ps[30].cmd );"
+    "push('cmdline 30[0]:' + ps[30].cmdline[0] );"
     ""
     "(function() { return logs.join('\\n') })()"
     ;
@@ -208,7 +215,7 @@ void ProcjsCtor(const v8::FunctionCallbackInfo<v8::Value>& info) {
   Handle<ObjectTemplate> t = ObjectTemplate::New();
   t->SetInternalFieldCount(1);
   t->SetAccessor(String::NewFromUtf8(isolate, "length"), GetProcjsLength);
-  t->Set(String::NewFromUtf8(isolate, "proc"), FunctionTemplate::New(isolate, GetProc)->GetFunction());
+  t->SetAccessor(String::NewFromUtf8(isolate, "procs"), GetProcs);
 
   Procjs *pjs = new Procjs(isolate);
   Local<Object> instance = t->NewInstance();
