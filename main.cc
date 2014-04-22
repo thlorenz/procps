@@ -8,6 +8,7 @@
 //#include "v8.h"
 #include "deps/v8/include/v8.h"
 #include "proc/readproc.h"
+#include "procjs.h"
 
 using namespace std;
 
@@ -184,29 +185,6 @@ void GetProcCmdline(v8::Local<v8::String> property, const v8::PropertyCallbackIn
   info.GetReturnValue().Set(proc->Cmdline());
 }
 
-v8::Handle<v8::String> GetScript(v8::Isolate* isolate) {
-  string src =
-    "'use strict';"
-    ""
-    "var logs = [];"
-    ""
-    "function push(s) { logs.push(s) }"
-    ""
-    "var pjs = new Procjs();"
-    "var ps = pjs.procs;"
-    "push('pid 3:' + ps[3].pid );"
-    "push('cmd 3:' + ps[3].cmd );"
-    "push('pid 30:' + ps[30].pid );"
-    "push('cmd 30:' + ps[30].cmd );"
-    "push('cmdline 30[0]:' + ps[30].cmdline[0] );"
-    ""
-    "(function() { return logs.join('\\n') })()"
-    ;
-
-  const char *js = src.c_str();
-  return v8::String::NewFromUtf8(isolate, js);
-}
-
 void ProcjsCtor(const v8::FunctionCallbackInfo<v8::Value>& info) {
   using namespace v8;
   Isolate *isolate = info.GetIsolate();
@@ -235,10 +213,11 @@ int main(void) {
   Handle<Object> global = context->Global();
   AddFunction(isolate, global, "Procjs", ProcjsCtor);
 
-  Handle<String> src = GetScript(isolate);
+  Handle<String> src = ReadFile(isolate, "test.js");
   Handle<Value> result = Script::Compile(src)->Run();
 
   cout << "Result: " << endl << *String::Utf8Value(result);
   return 0;
 }
 
+// vim: ft=cpp
