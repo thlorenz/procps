@@ -5,7 +5,8 @@
 #include <ctype.h>
 #include <string.h>
 
-#include "v8.h"
+//#include "v8.h"
+#include "deps/v8/include/v8.h"
 #include "proc/readproc.h"
 
 using namespace std;
@@ -29,6 +30,7 @@ void AddFunction(v8::Isolate* isolate, v8::Handle<v8::Object> global, const char
 v8::Handle<v8::String> GetScript(v8::Isolate* isolate);
 void GetProcPid(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info);
 void GetProcCmd(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info);
+void GetProcCmdline(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info);
 
 class Proc {
   v8::Isolate *_isolate;
@@ -42,10 +44,23 @@ public:
   }
 
   v8::Handle<v8::Array> Cmdline() const {
-    //v8::Array::New();
+    using namespace v8;
+    EscapableHandleScope scope(_isolate);
+
     if (_proc->cmdline) {
+      int len = 0;
+      while (_proc->cmdline[len]) len++;
+
+      Local<Array> arr = Array::New(_isolate, len);
+
       int i = 0;
-      while (_proc->cmdline[i]) i++;
+      for (i = 0; i < len; i++) {
+        arr->Set(Integer::New(_isolate, i), String::NewFromUtf8(_isolate, _proc->cmdline[i]));
+      }
+
+      return scope.Escape(arr);
+    } else {
+      return scope.Escape(Array::New(_isolate, 0));
     }
   }
 
@@ -62,6 +77,7 @@ public:
     t->SetInternalFieldCount(1);
     t->SetAccessor(String::NewFromUtf8(_isolate, "pid"), GetProcPid);
     t->SetAccessor(String::NewFromUtf8(_isolate, "cmd"), GetProcCmd);
+    t->SetAccessor(String::NewFromUtf8(_isolate, "cmdline"), GetProcCmdline);
 
     Local<Object> instance = t->NewInstance();
     instance->SetInternalField(0, External::New(_isolate, this));
@@ -151,9 +167,15 @@ void GetProcCmd(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v
 
   Proc* proc= Unwrap<Proc>(info);
   info.GetReturnValue().Set(String::NewFromUtf8(isolate, proc->Cmd()));
+}
 
-  /*Handle<Array> arr = Array::New(isolate);
-  info.GetReturnValue().Set(arr);*/
+void GetProcCmdline(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  using namespace v8;
+  Isolate *isolate = info.GetIsolate();
+  HandleScope handle_scope(isolate);
+
+  Proc* proc= Unwrap<Proc>(info);
+  info.GetReturnValue().Set(proc->Cmdline());
 }
 
 v8::Handle<v8::String> GetScript(v8::Isolate* isolate) {
@@ -169,6 +191,7 @@ v8::Handle<v8::String> GetScript(v8::Isolate* isolate) {
     "push('cmd 3:' + pjs.proc(3).cmd );"
     "push('pid 30: ' + pjs.proc(30).pid );"
     "push('cmd 30:' + pjs.proc(30).cmd );"
+    "push('cmdline 30[0]:' + pjs.proc(30).cmdline[0] );"
     ""
     "(function() { return logs.join('\\n') })()"
     ;
