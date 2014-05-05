@@ -24,7 +24,7 @@ LDFLAGS =                                                          \
 	-lrt 
 
 build: $(LIBPROC) $(V8LIB)
-	$(CXX) $(CFLAGS) read_file.cc main.cc -o main $(LDFLAGS) 
+	$(CXX) $(CFLAGS) read_file.cc main.cc proc.cc -o main $(LDFLAGS) 
 
 build-print: $(LIBPROC)
 	$(CC) $(CFLAGS) print_proctab.c -o print_proctab $(LDFLAGS) 
