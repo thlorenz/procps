@@ -33,4 +33,36 @@ public:
   v8::Handle<v8::Object> Wrap();
 };
 
+class Procjs {
+  v8::Isolate *_isolate;
+  proc_t **_pt;
+  unsigned int _len;
+
+  static proc_t **get_proctab() {
+    int flags = 0;
+    flags = flags | PROC_FILLCOM | PROC_FILLSTATUS | PROC_FILLSTAT | PROC_FILLMEM | PROC_FILLGRP | PROC_FILLUSR;
+    return readproctab(flags);
+  }
+
+
+  Proc* procAt(const int idx) const {
+    return new Proc(_isolate, _pt[idx]);
+  };
+
+  void refresh() {
+    _pt = get_proctab();
+    _len = -1;
+
+    while(*(_pt + (++_len)));
+  }
+
+public:
+  Procjs(v8::Isolate* isolate): _isolate(isolate) {
+    refresh();
+  }
+
+  static void New(const v8::FunctionCallbackInfo<v8::Value>& info);
+  static void Procs(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info);
+  static void Refresh(const v8::FunctionCallbackInfo<v8::Value>& info);
+};
 #endif
