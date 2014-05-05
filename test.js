@@ -9,7 +9,7 @@ for (var i  = 0; i < pjs.procs.length; i++) {
   var ps = pjs.procs[i];
   s = ps.pid + ': ' + ps.cmd;
   if (ps.cmdline && ps.cmdline.length) {
-    s += '[ ';
+    s += ' [ ';
     for (var j = 0; j < ps.cmdline.length; j++) s += ps.cmdline[j] + ' ';
     s += ' ]';
   }
