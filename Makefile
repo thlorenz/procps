@@ -24,7 +24,7 @@ LDFLAGS =                                                          \
 	-lrt 
 
 build: $(LIBPROC) $(V8LIB)
-	$(CXX) $(CFLAGS) read_file.cc main.cc proc.cc -o main $(LDFLAGS) 
+	$(CXX) $(CFLAGS) read_file.cc main.cc proc.cc procjs.cc -o main $(LDFLAGS) 
 
 build-print: $(LIBPROC)
 	$(CC) $(CFLAGS) print_proctab.c -o print_proctab $(LDFLAGS) 
@@ -43,6 +43,7 @@ clean:
 	find . -name "*.gc*" -exec rm {} \;
 	rm -rf `find . -name "*.dSYM" -print`
 	rm -f main print_proctab
+	rm -f *.o
 
 cleanall: clean
 	cd $(ROOT)deps/procps && $(MAKE) clean 
