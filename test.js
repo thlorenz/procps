@@ -14,6 +14,12 @@ function logProcs(pjs) {
       s += ' ]';
     }
 
+    if (ps.environ && ps.environ.length) {
+      s += ' [ ';
+      for (var k = 0; k < ps.environ.length; k++) s += ps.environ[k] + ' ';
+      s += ' ]';
+    }
+
     s += '\n  ' +
       ' pcpu: '   + ps.pcpu    +
       ' state: '  + ps.state;
