@@ -1,24 +1,22 @@
 #include "procjs.h"
 
-void Proc::Pid(
-    v8::Local<v8::String> property,
-    const v8::PropertyCallbackInfo<v8::Value>& info) {
-  using namespace v8;
-  Isolate *isolate = info.GetIsolate();
-  HandleScope handle_scope(isolate);
+#define X(Prop, prop, convert)                                             \
+  void Proc::Prop(                                                         \
+      v8::Local<v8::String> property,                                      \
+      const v8::PropertyCallbackInfo<v8::Value>& info) {                   \
+    using namespace v8;                                                    \
+    Isolate *isolate = info.GetIsolate();                                  \
+    HandleScope handle_scope(isolate);                                     \
+                                                                           \
+    Proc* self = Unwrap<Proc>(info);                                       \
+    info.GetReturnValue().Set(convert(isolate, self->_proc->prop));        \
+  }
 
-  Proc* self = Unwrap<Proc>(info);
-  info.GetReturnValue().Set(Number::New(isolate, self->_proc->ppid));
-}
+X(Ppid, ppid, Number::New)
+X(Tid, tid, Number::New)
+X(Cmd, cmd, String::NewFromUtf8)
 
-void Proc::Cmd(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
-  using namespace v8;
-  Isolate *isolate = info.GetIsolate();
-  HandleScope handle_scope(isolate);
-
-  Proc* self= Unwrap<Proc>(info);
-  info.GetReturnValue().Set(String::NewFromUtf8(isolate, self->_proc->cmd));
-}
+#undef X
 
 void Proc::Cmdline(
     v8::Local<v8::String> property,
@@ -55,11 +53,17 @@ v8::Handle<v8::Object> Proc::Wrap() {
 
   // HandleScope handle_scope(_isolate);
   Handle<ObjectTemplate> t = ObjectTemplate::New(_isolate);
-
   t->SetInternalFieldCount(1);
-  t->SetAccessor(String::NewFromUtf8(_isolate, "pid"), Proc::Pid);
-  t->SetAccessor(String::NewFromUtf8(_isolate, "cmd"), Proc::Cmd);
-  t->SetAccessor(String::NewFromUtf8(_isolate, "cmdline"), Proc::Cmdline);
+
+#define X(Prop, prop) \
+  t->SetAccessor(String::NewFromUtf8(_isolate, #prop), Proc::Prop);
+
+  X(Ppid, ppid)
+  X(Tid, tid)
+  X(Cmd, cmd)
+  X(Cmdline, cmdline)
+
+#undef X
 
   Local<Object> instance = t->NewInstance();
   instance->SetInternalField(0, External::New(_isolate, this));

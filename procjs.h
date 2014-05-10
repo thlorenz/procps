@@ -26,9 +26,15 @@ public:
   Proc(v8::Isolate* isolate, proc_t *proc)
     : _isolate(isolate), _proc(proc) {}
 
-  static void Pid(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info);
-  static void Cmd(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info);
-  static void Cmdline(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info);
+#define X(Prop) \
+  static void Prop(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info);
+
+  X(Ppid)
+  X(Tid)
+  X(Cmd)
+  X(Cmdline)
+
+#undef X
 
   v8::Handle<v8::Object> Wrap();
 };
