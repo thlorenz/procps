@@ -118,6 +118,7 @@ public:
 
   X(Cmd)
   X(Cmdline)
+  X(Environ)
 
 #undef X
 
