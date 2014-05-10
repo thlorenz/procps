@@ -18,8 +18,17 @@ X(Ppid, ppid, Int32::New)
 // unsigned
 X(Pcpu, pcpu, Int32::NewFromUnsigned)
 // char
-// todo: pass actual char instead of charcode
-X(State, state, Int32::New)
+void Proc::State(
+    v8::Local<v8::String> property,
+    const v8::PropertyCallbackInfo<v8::Value>& info) {
+  using namespace v8;
+  Isolate *isolate = info.GetIsolate();
+  HandleScope handle_scope(isolate);
+
+  Proc* self = Unwrap<Proc>(info);
+  info.GetReturnValue().Set(
+      String::NewFromUtf8(isolate, &self->_proc->state));
+}
 
 // unsigned long long
 X(Utime, utime, Uint32::New)
