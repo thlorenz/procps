@@ -69,56 +69,56 @@ public:
   X(Dt)         // statm           dirty pages
 
 
-	X(VmSize)        // status          same as vsize in kb
-	X(VmLock)        // status          locked pages in kb
-	X(VmRss)         // status          same as rss in kb
-	X(VmData)        // status          data size
-	X(VmStack)       // status          stack size
-	X(VmExe)         // status          executable size
-	X(VmLib)         // status          library size (all pages, not just used ones)
+	X(VmSize)     // status          same as vsize in kb
+	X(VmLock)     // status          locked pages in kb
+	X(VmRss)      // status          same as rss in kb
+	X(VmData)     // status          data size
+	X(VmStack)    // status          stack size
+	X(VmExe)      // status          executable size
+	X(VmLib)      // status          library size (all pages, not just used ones)
 
 
-	X(Rtprio)   // stat            real-time priority
-	X(Sched)    // stat            scheduling class
-	X(Vsize)    // stat            number of pages of virtual memory ...
-	X(RssRlim)  // stat            resident set size limit?
-	X(Flags)    // stat            kernel flags for the process
-	X(MinFlt)   // stat            number of minor page faults since process start
-	X(MajFlt)   // stat            number of major page faults since process start
-	X(CminFlt)  // stat            cumulative min_flt of process and child processes
-	X(CmajFlt)  // stat            cumulative maj_flt of process and child processes
+	X(Rtprio)     // stat            real-time priority
+	X(Sched)      // stat            scheduling class
+	X(Vsize)      // stat            number of pages of virtual memory ...
+	X(RssRlim)    // stat            resident set size limit?
+	X(Flags)      // stat            kernel flags for the process
+	X(MinFlt)     // stat            number of minor page faults since process start
+	X(MajFlt)     // stat            number of major page faults since process start
+	X(CminFlt)    // stat            cumulative min_flt of process and child processes
+	X(CmajFlt)    // stat            cumulative maj_flt of process and child processes
 
-  X(Euser)	// stat(),status   effective user name
-  X(Ruser)	// status          real user name
-  X(Suser)	// status          saved user name
-  X(Fuser)	// status          filesystem user name
-  X(Rgroup)	// status          real group name
-  X(Egroup)	// status          effective group name
-  X(Sgroup)	// status          saved group name
-  X(Fgroup)	// status          filesystem group name
+  X(Euser)      // stat(),status   effective user name
+  X(Ruser)      // status          real user name
+  X(Suser)      // status          saved user name
+  X(Fuser)      // status          filesystem user name
+  X(Rgroup)     // status          real group name
+  X(Egroup)     // status          effective group name
+  X(Sgroup)     // status          saved group name
+  X(Fgroup)     // status          filesystem group name
+  X(Cmd)        // stat,status     basename of executable file in call to exec(2)
 
-	X(Pgrp)        // stat            process group id
-	X(Session)     // stat            session id
-	X(Nlwp)        // stat,status     number of threads, or 0 if no clue
-	X(Tgid)        // (special)       task group ID, the POSIX PID (see also: tid)
-	X(Tty)         // stat            full device number of controlling terminal
+	X(Pgrp)       // stat            process group id
+	X(Session)    // stat            session id
+	X(Nlwp)       // stat,status     number of threads, or 0 if no clue
+	X(Tgid)       // (special)       task group ID, the POSIX PID (see also: tid)
+	X(Tty)        // stat            full device number of controlling terminal
 
   X(Euid)
-  X(Egid)        // stat(),status   effective
+  X(Egid)       // stat(),status   effective
   X(Ruid)
-  X(Rgid)        // status          real
+  X(Rgid)       // status          real
   X(Suid)
-  X(Sgid)        // status          saved
+  X(Sgid)       // status          saved
   X(Fuid)
-  X(Fgid)        // status          fs (used for file access only)
+  X(Fgid)       // status          fs (used for file access only)
 
-	X(Tpgid)       // stat            terminal process group id
-	X(ExitSignal)  // stat            might not be SIGCHLD
-	X(Processor)   // stat            current (or most recent?) CPU
+	X(Tpgid)      // stat            terminal process group id
+	X(ExitSignal) // stat            might not be SIGCHLD
+	X(Processor)  // stat            current (or most recent?) CPU
 
-  X(Cmd)
-  X(Cmdline)
-  X(Environ)
+  X(Environ)    // (special)       environment string vector (/proc/#/environ)
+  X(Cmdline)    // (special)       command line string vector (/proc/#/cmdline)
 
 #undef X
 
@@ -130,9 +130,36 @@ class Procjs {
   proc_t **_pt;
   unsigned int _len;
 
+  /*
+   * By default readproc will consider all processes as valid to parse
+   * and return, but not actually fill in the cmdline, environ, and /proc/#/statm
+   * derived memory fields.
+   *
+   * `flags' (a bitwise-or of PROC_* below) modifies the default behavior.
+   *
+   * The "fill" options will cause more of the proc_t to be filled in.
+   *
+   * The "filter" options all use the second argument as the pointer to a list of objects:
+   *    process status', process id's, user id's.
+   *
+   * The third argument is the length of the list (currently only used for lists of user
+   * id's since uid_t supports no convenient termination sentinel.)
+   */
   static proc_t **get_proctab() {
     int flags = 0;
-    flags = flags | PROC_FILLCOM | PROC_FILLSTATUS | PROC_FILLSTAT | PROC_FILLMEM | PROC_FILLGRP | PROC_FILLUSR;
+    flags = flags
+      | PROC_FILLMEM     // read statm
+      | PROC_FILLCOM     // alloc and fill in `cmdline'
+      | PROC_FILLENV     // alloc and fill in `environ'
+      | PROC_FILLUSR     // resolve user id number -> user name
+      | PROC_FILLGRP     // resolve group id number -> group name
+      | PROC_FILLSTATUS  // read status -- currently unconditional
+      | PROC_FILLSTAT    // read stat -- currently unconditional
+      | PROC_FILLWCHAN   // look up WCHAN name
+      | PROC_FILLARG     // alloc and fill in `cmdline'
+      | PROC_LOOSE_TASKS // treat threads as if they were processes
+    ;
+
     return readproctab(flags);
   }
 
