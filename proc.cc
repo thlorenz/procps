@@ -130,34 +130,34 @@ X(Processor, processor, Uint32::New)
 #undef X
 
 // string arrays cmdline and environ
-#define X(Prop, prop)                                                                                    \
-  void Proc::Prop(                                                                                       \
-      v8::Local<v8::String> property,                                                                    \
-      const v8::PropertyCallbackInfo<v8::Value>& info) {                                                 \
-    using namespace v8;                                                                                  \
-    Isolate *isolate = info.GetIsolate();                                                                \
-    HandleScope handle_scope(isolate);                                                                   \
-                                                                                                         \
-    Proc* self= Unwrap<Proc>(info);                                                                      \
-    proc_t *_proc = self->_proc;                                                                         \
-                                                                                                         \
-    Local<Array> arr;                                                                                    \
-                                                                                                         \
-    if (_proc->prop) {                                                                                   \
-      int len = 0;                                                                                       \
-      while (_proc->prop[len]) len++;                                                                    \
-                                                                                                         \
-      arr = Array::New(self->_isolate, len);                                                             \
-                                                                                                         \
-      int i = 0;                                                                                         \
-      for (i = 0; i < len; i++) {                                                                        \
-        arr->Set(Integer::New(self->_isolate, i), String::NewFromUtf8(self->_isolate, _proc->prop[i]));  \
-      }                                                                                                  \
-    } else {                                                                                             \
-      arr = Array::New(self->_isolate, 0);                                                               \
-    }                                                                                                    \
-                                                                                                         \
-    info.GetReturnValue().Set(arr);                                                                      \
+#define X(Prop, prop)                                                     \
+  void Proc::Prop(                                                        \
+      v8::Local<v8::String> property,                                     \
+      const v8::PropertyCallbackInfo<v8::Value>& info) {                  \
+    using namespace v8;                                                   \
+    Isolate *isolate = info.GetIsolate();                                 \
+    HandleScope handle_scope(isolate);                                    \
+                                                                          \
+    Proc* self= Unwrap<Proc>(info);                                       \
+    proc_t *_proc = self->_proc;                                          \
+                                                                          \
+    Local<Array> arr;                                                     \
+                                                                          \
+    if (_proc->prop) {                                                    \
+      int len = 0;                                                        \
+      while (_proc->prop[len]) len++;                                     \
+                                                                          \
+      arr = Array::New(self->_isolate, len);                              \
+                                                                          \
+      int i = 0;                                                          \
+      for (i = 0; i < len; i++) {                                         \
+        arr->Set(i, String::NewFromUtf8(self->_isolate, _proc->prop[i])); \
+      }                                                                   \
+    } else {                                                              \
+      arr = Array::New(self->_isolate, 0);                                \
+    }                                                                     \
+                                                                          \
+    info.GetReturnValue().Set(arr);                                       \
   }
 
 X(Cmdline, cmdline)

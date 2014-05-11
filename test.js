@@ -7,17 +7,17 @@ function logProcs(pjs) {
   var s;
   for (var i  = 0; i < pjs.procs.length; i++) {
     var ps = pjs.procs[i];
-    s =   ps.ppid + ' tid: ' + ps.tid + ': ' + ps.cmd;
+    s =  '\n' + ps.ppid + ' tid: ' + ps.tid + ' cmd: ' + ps.cmd;
     if (ps.cmdline && ps.cmdline.length) {
-      s += ' [ ';
+      s += ' cmdline: [ ';
       for (var j = 0; j < ps.cmdline.length; j++) s += ps.cmdline[j] + ' ';
       s += ' ]';
     }
 
     if (ps.environ && ps.environ.length) {
-      s += ' [ ';
+      s += '\n  environ: [ ';
       for (var k = 0; k < ps.environ.length; k++) s += ps.environ[k] + ' ';
-      s += ' ]';
+      s += '\n]';
     }
 
     s += '\n  ' +
