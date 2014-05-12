@@ -4,9 +4,15 @@
 var logs = [];
 
 function logProcs(pjs) {
+
+  var args;
+  // passing result as args array instead of v8::Array return value
+  pjs.procs(function () { args = arguments; });
+
   var s;
-  for (var i  = 0; i < pjs.procs.length; i++) {
-    var ps = pjs.procs[i];
+  for (var i  = 0; i < args.length; i++) {
+    var ps = args[i];
+    logs.push('ps ' + Object.keys(ps));
     s =  '\n' + ps.ppid + ' tid: ' + ps.tid + ' cmd: ' + ps.cmd;
     if (ps.cmdline && ps.cmdline.length) {
       s += ' cmdline: [ ';
@@ -111,8 +117,8 @@ function logProcs(pjs) {
 var pjs = new Procjs();
 logProcs(pjs);
 
-pjs.refresh();
-logs.push('\n==============================\n');
-logProcs(pjs);
+//pjs.refresh();
+//logs.push('\n==============================\n');
+//logProcs(pjs);
 
 (function() { return logs.join('\n'); })();
