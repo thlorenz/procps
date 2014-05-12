@@ -11,21 +11,16 @@ using namespace std;
 
 v8::Handle<v8::String> GetScript(v8::Isolate* isolate);
 
-static void AddFunction(v8::Isolate* isolate, v8::Handle<v8::Object> global, const char* name, v8::FunctionCallback callback) {
-  using namespace v8;
-  HandleScope handle_scope(isolate);
-  global->Set(String::NewFromUtf8(isolate, name), FunctionTemplate::New(isolate, callback)->GetFunction());
-}
-
 int main(void) {
   using namespace v8;
   Isolate *isolate = Isolate::GetCurrent();
-  HandleScope handle_scope(isolate);
-  Handle<Context> context = Context::New(isolate);
+  HandleScope handle_scope;
+  Handle<Context> context = Context::New();
   Context::Scope context_scope(context);
 
   Handle<Object> global = context->Global();
-  AddFunction(isolate, global, "Procjs", Procjs::New);
+
+  global->Set(v8::String::New("Procjs"), v8::FunctionTemplate::New(Procjs::New)->GetFunction());
 
   Handle<String> src = ReadFile(isolate, "test.js");
   Handle<Value> result = Script::Compile(src)->Run();

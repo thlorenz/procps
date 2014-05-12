@@ -7,7 +7,7 @@
 template <typename T, typename CallbackInfo> T* Unwrap(const CallbackInfo& info) {
   using namespace v8;
   Isolate *isolate = info.GetIsolate();
-  HandleScope handle_scope(isolate);
+  HandleScope handle_scope;
 
   Local<Object> self = info.Holder();
   Local<External> external = Local<External>::Cast(self->GetInternalField(0));
@@ -27,7 +27,7 @@ public:
     : _isolate(isolate), _proc(proc) {}
 
 #define X(Prop) \
-  static void Prop(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info);
+  static v8::Handle<v8::Value> Prop(v8::Local<v8::String> property, const v8::AccessorInfo& info);
 
   X(Tid)        // (special)       task id, the POSIX thread ID (see also: tgid)
   X(Ppid)       // stat,status     pid of parent process
@@ -122,7 +122,7 @@ public:
 
 #undef X
 
-  v8::Handle<v8::Object> Wrap();
+  v8::Local<v8::Value> Wrap();
 };
 
 class Procjs {
@@ -166,8 +166,8 @@ public:
     refresh(flags);
   }
 
-  static void New(const v8::FunctionCallbackInfo<v8::Value>& info);
-  static void Procs(const v8::FunctionCallbackInfo<v8::Value>& info);
-  static void Refresh(const v8::FunctionCallbackInfo<v8::Value>& info);
+  static v8::Handle<v8::Value> New(const v8::Arguments& info);
+  static v8::Handle<v8::Value> Procs(const v8::Arguments& info);
+  static v8::Handle<v8::Value> Refresh(const v8::Arguments& info);
 };
 #endif
