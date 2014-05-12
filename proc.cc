@@ -105,7 +105,7 @@ X(Sgroup, sgroup, String::NewFromUtf8)
 X(Fgroup, fgroup, String::NewFromUtf8)
 X(Cmd, cmd, String::NewFromUtf8)
 
-// todo *ring and *next which each point to another proc_t
+// *ring and *next which each point to another proc_t seem to not used, so omitted for now
 
 // int
 X(Pgrp, pgrp, Uint32::New)

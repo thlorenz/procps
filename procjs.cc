@@ -50,7 +50,7 @@ void Procjs::Procs(const v8::FunctionCallbackInfo<v8::Value>& args) {
   // Passing result by calling function with arguments instead of populating
   // and returning v8::Array since it's so much faster
   // This technique came from node: https://github.com/joyent/node/blob/5344d0c1034b28f9e6de914430d8c8436ad85105/src/node_file.cc#L326
-  // (thanks @trevnorris)
+  // (thanks @trevnorris for explaining it to me)
   cb->NewInstance(self->_len, argv);
 }
 

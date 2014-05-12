@@ -1,7 +1,7 @@
 /*jshint asi: true, laxbreak: true, laxcomma: true */
 /*globals Procjs */
 
-var logs = [];
+// API
 
 var flags = {
     PROC_FILLMEM     : 0x0001 // read statm
@@ -16,15 +16,51 @@ var flags = {
   , PROC_LOOSE_TASKS : 0x0200 // threat threads as if they were processes
 };
 
-function logProcs(pjs) {
+var defaultFlags = 0
+  | flags.PROC_FILLMEM
+  | flags.PROC_FILLCOM
+  | flags.PROC_FILLENV
+  | flags.PROC_FILLUSR
+  | flags.PROC_FILLGRP
+  | flags.PROC_FILLSTATUS
+  | flags.PROC_FILLSTAT
+  | flags.PROC_FILLWCHAN
+  | flags.PROC_FILLARG
+  | flags.PROC_LOOSE_TASKS
+  ;
+
+var exports = function getProcs(flags) {
+  var pjs = new Procjs(flags || defaultFlags);
 
   var args;
   // passing result as args array instead of v8::Array return value
-  pjs.procs(function () { args = arguments; });
+  // the callback is invoked synchronously
+  pjs.procs(function () { args = Array.prototype.slice.call(arguments); });
+
+  var ret =  { 
+      procs: args
+    , refresh: function (flags_) {
+        var args_;
+        pjs.refresh(flags_ || flags);
+        pjs.procs(function () { args_ = Array.prototype.slice.call(arguments); });
+        ret.procs = args_;
+      }
+  }
+  return ret;
+}
+
+exports.flags        = flags;
+exports.defaultFlags = defaultFlags;
+
+// End API
+
+var logs = [];
+
+function logProcs(procs) {
 
   var s;
-  for (var i  = 0; i < args.length; i++) {
-    var ps = args[i];
+  for (var i  = 0; i < procs.length; i++) {
+    var ps = procs[i];
     s =  '\n' + ps.ppid + ' tid: ' + ps.tid + ' cmd: ' + ps.cmd;
     if (ps.cmdline && ps.cmdline.length) {
       s += ' cmdline: [ ';
@@ -126,21 +162,19 @@ function logProcs(pjs) {
   }
 }
 
-var defaultFlags = 0
-  | flags.PROC_FILLMEM
-  | flags.PROC_FILLCOM
-  | flags.PROC_FILLENV
-  | flags.PROC_FILLUSR
-  | flags.PROC_FILLGRP
-  | flags.PROC_FILLSTATUS
-  | flags.PROC_FILLSTAT
-  | flags.PROC_FILLWCHAN
-  | flags.PROC_FILLARG
-  | flags.PROC_LOOSE_TASKS
-  ;
+var result = exports();
+logProcs(result.procs);
 
-var pjs = new Procjs(defaultFlags);
-//var pjs = new Procjs(flags.PROC_FILLMEM);
-logProcs(pjs);
+logs.push('refreshing with limited flags');
+
+result.refresh(
+    exports.flags.PROC_FILLMEM 
+  | exports.flags.PROC_FILLCOM 
+  | exports.flags.PROC_FILLUSR 
+  | exports.flags.PROC_FILLGRP
+  | exports.flags.PROC_FILLSTAT
+  | exports.flags.PROC_FILLSTATUS
+);
+logProcs(result.procs);
 
 (function() { return logs.join('\n'); })();
