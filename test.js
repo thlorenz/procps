@@ -1,7 +1,20 @@
-/*jshint asi: true */
+/*jshint asi: true, laxbreak: true, laxcomma: true */
 /*globals Procjs */
 
 var logs = [];
+
+var flags = {
+    PROC_FILLMEM     : 0x0001 // read statm
+  , PROC_FILLCOM     : 0x0002 // alloc and fill in `cmdline'
+  , PROC_FILLENV     : 0x0004 // alloc and fill in `environ'
+  , PROC_FILLUSR     : 0x0008 // resolve user id number -> user name
+  , PROC_FILLGRP     : 0x0010 // resolve group id number -> group name
+  , PROC_FILLSTATUS  : 0x0020 // read status -- currently unconditional
+  , PROC_FILLSTAT    : 0x0040 // read stat -- currently unconditional
+  , PROC_FILLWCHAN   : 0x0080 // look up WCHAN name
+  , PROC_FILLARG     : 0x0100 // alloc and fill in `cmdline'
+  , PROC_LOOSE_TASKS : 0x0200 // threat threads as if they were processes
+};
 
 function logProcs(pjs) {
 
@@ -12,7 +25,6 @@ function logProcs(pjs) {
   var s;
   for (var i  = 0; i < args.length; i++) {
     var ps = args[i];
-    logs.push('ps ' + Object.keys(ps));
     s =  '\n' + ps.ppid + ' tid: ' + ps.tid + ' cmd: ' + ps.cmd;
     if (ps.cmdline && ps.cmdline.length) {
       s += ' cmdline: [ ';
@@ -114,11 +126,21 @@ function logProcs(pjs) {
   }
 }
 
-var pjs = new Procjs();
-logProcs(pjs);
+var defaultFlags = 0
+  | flags.PROC_FILLMEM
+  | flags.PROC_FILLCOM
+  | flags.PROC_FILLENV
+  | flags.PROC_FILLUSR
+  | flags.PROC_FILLGRP
+  | flags.PROC_FILLSTATUS
+  | flags.PROC_FILLSTAT
+  | flags.PROC_FILLWCHAN
+  | flags.PROC_FILLARG
+  | flags.PROC_LOOSE_TASKS
+  ;
 
-//pjs.refresh();
-//logs.push('\n==============================\n');
-//logProcs(pjs);
+var pjs = new Procjs(defaultFlags);
+//var pjs = new Procjs(flags.PROC_FILLMEM);
+logProcs(pjs);
 
 (function() { return logs.join('\n'); })();
