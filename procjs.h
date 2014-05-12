@@ -181,7 +181,8 @@ public:
   }
 
   static void New(const v8::FunctionCallbackInfo<v8::Value>& info);
-  static void Procs(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info);
+  //static void Procs(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info);
+  static void Procs(const v8::FunctionCallbackInfo<v8::Value>& info);
   static void Refresh(const v8::FunctionCallbackInfo<v8::Value>& info);
 };
 #endif

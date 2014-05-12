@@ -32,6 +32,9 @@ build-print: $(LIBPROC)
 run: build
 	./main
 
+time: build
+	time ./main > /dev/null
+
 run-print: build-print
 	./print_proctab
 
@@ -48,4 +51,4 @@ clean:
 cleanall: clean
 	cd $(ROOT)deps/procps && $(MAKE) clean 
 
-.PHONY: libproc clean cleanall
+.PHONY: libproc clean cleanall run time build
