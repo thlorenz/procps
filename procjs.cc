@@ -3,16 +3,15 @@
 
 #define MAX_PROCS 5000
 
-static void AddFunction(v8::Isolate* isolate, v8::Handle<v8::Object> global, const char* name, v8::FunctionCallback callback) {
-  using namespace v8;
-  HandleScope handle_scope(isolate);
-  global->Set(String::NewFromUtf8(isolate, name), FunctionTemplate::New(isolate, callback)->GetFunction());
+typedef v8::Handle<v8::Value> (*FunctionCallback)(const v8::Arguments& info);
+void AddFunction(v8::Handle<v8::Object> global, const char* name, FunctionCallback callback) {
+  global->Set(v8::String::New(name), v8::FunctionTemplate::New(callback)->GetFunction());
 }
 
-void Procjs::New(const v8::FunctionCallbackInfo<v8::Value>& args) {
+v8::Handle<v8::Value> Procjs::New(const v8::Arguments& args) {
   using namespace v8;
   Isolate *isolate = args.GetIsolate();
-  HandleScope handle_scope(isolate);
+  HandleScope handle_scope;
 
   // our JS API ensures we always pass flags (defaults if none were given)
   Local<Integer> flags = args[0].As<Integer>();
@@ -23,18 +22,18 @@ void Procjs::New(const v8::FunctionCallbackInfo<v8::Value>& args) {
 
   Procjs *self = new Procjs(isolate, flags->Uint32Value());
   Local<Object> instance = t->NewInstance();
-  instance->SetInternalField(0, External::New(isolate, self));
+  instance->SetInternalField(0, External::New(self));
 
-  AddFunction(isolate, instance, "procs", Procjs::Procs);
-  AddFunction(isolate, instance, "refresh", Procjs::Refresh);
+  AddFunction(instance, "procs", Procjs::Procs);
+  AddFunction(instance, "refresh", Procjs::Refresh);
 
-  args.GetReturnValue().Set(instance);
+  return handle_scope.Close(instance);
 }
 
-void Procjs::Procs(const v8::FunctionCallbackInfo<v8::Value>& args) {
+v8::Handle<v8::Value> Procjs::Procs(const v8::Arguments& args) {
   using namespace v8;
   Isolate *isolate = args.GetIsolate();
-  HandleScope handle_scope(isolate);
+  HandleScope handle_scope;
 
   Local<Function> cb = args[0].As<Function>();
   assert(cb->IsFunction());
@@ -52,12 +51,14 @@ void Procjs::Procs(const v8::FunctionCallbackInfo<v8::Value>& args) {
   // This technique came from node: https://github.com/joyent/node/blob/5344d0c1034b28f9e6de914430d8c8436ad85105/src/node_file.cc#L326
   // (thanks @trevnorris for explaining it to me)
   cb->NewInstance(self->_len, argv);
+
+  return v8::Undefined();
 }
 
-void Procjs::Refresh(const v8::FunctionCallbackInfo<v8::Value>& args) {
+v8::Handle<v8::Value> Procjs::Refresh(const v8::Arguments& args) {
   using namespace v8;
   Isolate *isolate = args.GetIsolate();
-  HandleScope handle_scope(isolate);
+  HandleScope handle_scope;
 
   // our JS API ensures we always pass flags (defaults if none were given)
   Local<Integer> flags = args[0].As<Integer>();
@@ -65,4 +66,6 @@ void Procjs::Refresh(const v8::FunctionCallbackInfo<v8::Value>& args) {
 
   Procjs* self = Unwrap<Procjs>(args);
   self->refresh(flags->Uint32Value());
+
+  return v8::Undefined();
 }

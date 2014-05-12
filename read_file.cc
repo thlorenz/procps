@@ -16,7 +16,7 @@ v8::Handle<v8::String> ReadFile(v8::Isolate* isolate, const char* name) {
   }
   fclose(file);
   v8::Handle<v8::String> result =
-      v8::String::NewFromUtf8(isolate, chars, v8::String::kNormalString, size);
+      v8::String::New(chars, size);
   delete[] chars;
   return result;
 }

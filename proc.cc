@@ -1,15 +1,15 @@
 #include "procjs.h"
 
-#define X(Prop, prop, convert)                                             \
-  void Proc::Prop(                                                         \
-      v8::Local<v8::String> property,                                      \
-      const v8::PropertyCallbackInfo<v8::Value>& info) {                   \
-    using namespace v8;                                                    \
-    Isolate *isolate = info.GetIsolate();                                  \
-    HandleScope handle_scope(isolate);                                     \
-                                                                           \
-    Proc* self = Unwrap<Proc>(info);                                       \
-    info.GetReturnValue().Set(convert(isolate, self->_proc->prop));        \
+#define X(Prop, prop, convert)                                               \
+  v8::Handle<v8::Value> Proc::Prop(                                          \
+      v8::Local<v8::String> property,                                        \
+      const v8::AccessorInfo& info) {                                        \
+    using namespace v8;                                                      \
+    Isolate *isolate = info.GetIsolate();                                    \
+    HandleScope handle_scope;                                                \
+                                                                             \
+    Proc* self = Unwrap<Proc>(info);                                         \
+    return handle_scope.Close(convert(self->_proc->prop));                   \
   }
 
 // int
@@ -18,16 +18,15 @@ X(Ppid, ppid, Int32::New)
 // unsigned
 X(Pcpu, pcpu, Int32::NewFromUnsigned)
 // char
-void Proc::State(
+v8::Handle<v8::Value> Proc::State(
     v8::Local<v8::String> property,
-    const v8::PropertyCallbackInfo<v8::Value>& info) {
+    const v8::AccessorInfo& info) {
   using namespace v8;
   Isolate *isolate = info.GetIsolate();
-  HandleScope handle_scope(isolate);
+  HandleScope handle_scope;
 
   Proc* self = Unwrap<Proc>(info);
-  info.GetReturnValue().Set(
-      String::NewFromUtf8(isolate, &self->_proc->state));
+  return handle_scope.Close(String::New(&self->_proc->state));
 }
 
 // unsigned long long
@@ -39,11 +38,11 @@ X(StartTime, start_time, Uint32::New)
 
 #ifdef SIGNAL_STRING
 //  char*
-X(Signal, signal, String::NewFromUtf8)
-X(Blocked, blocked, String::NewFromUtf8)
-X(Sigignore, sigignore, String::NewFromUtf8)
-X(Sigcatch, sigcatch, String::NewFromUtf8)
-X(_Sigpnd, _sigpnd, String::NewFromUtf8)
+X(Signal, signal, String::New)
+X(Blocked, blocked, String::New)
+X(Sigignore, sigignore, String::New)
+X(Sigcatch, sigcatch, String::New)
+X(_Sigpnd, _sigpnd, String::New)
 #else
 // long long
 X(Signal, signal, Uint32::New)
@@ -95,15 +94,15 @@ X(CminFlt, cmin_flt, Uint32::New)
 X(CmajFlt, cmaj_flt, Uint32::New)
 
 // char*
-X(Euser, euser, String::NewFromUtf8)
-X(Ruser, ruser, String::NewFromUtf8)
-X(Suser, suser, String::NewFromUtf8)
-X(Fuser, fuser, String::NewFromUtf8)
-X(Rgroup, rgroup, String::NewFromUtf8)
-X(Egroup, egroup, String::NewFromUtf8)
-X(Sgroup, sgroup, String::NewFromUtf8)
-X(Fgroup, fgroup, String::NewFromUtf8)
-X(Cmd, cmd, String::NewFromUtf8)
+X(Euser, euser, String::New)
+X(Ruser, ruser, String::New)
+X(Suser, suser, String::New)
+X(Fuser, fuser, String::New)
+X(Rgroup, rgroup, String::New)
+X(Egroup, egroup, String::New)
+X(Sgroup, sgroup, String::New)
+X(Fgroup, fgroup, String::New)
+X(Cmd, cmd, String::New)
 
 // *ring and *next which each point to another proc_t seem to not used, so omitted for now
 
@@ -130,49 +129,49 @@ X(Processor, processor, Uint32::New)
 #undef X
 
 // string arrays cmdline and environ
-#define X(Prop, prop)                                                     \
-  void Proc::Prop(                                                        \
-      v8::Local<v8::String> property,                                     \
-      const v8::PropertyCallbackInfo<v8::Value>& info) {                  \
-    using namespace v8;                                                   \
-    Isolate *isolate = info.GetIsolate();                                 \
-    HandleScope handle_scope(isolate);                                    \
-                                                                          \
-    Proc* self= Unwrap<Proc>(info);                                       \
-    proc_t *_proc = self->_proc;                                          \
-                                                                          \
-    Local<Array> arr;                                                     \
-                                                                          \
-    if (_proc->prop) {                                                    \
-      int len = 0;                                                        \
-      while (_proc->prop[len]) len++;                                     \
-                                                                          \
-      arr = Array::New(self->_isolate, len);                              \
-                                                                          \
-      int i = 0;                                                          \
-      for (i = 0; i < len; i++) {                                         \
-        arr->Set(i, String::NewFromUtf8(self->_isolate, _proc->prop[i])); \
-      }                                                                   \
-    } else {                                                              \
-      arr = Array::New(self->_isolate, 0);                                \
-    }                                                                     \
-                                                                          \
-    info.GetReturnValue().Set(arr);                                       \
+#define X(Prop, prop)                                                       \
+  v8::Handle<v8::Value> Proc::Prop(                                         \
+      v8::Local<v8::String> property,                                       \
+      const v8::AccessorInfo& info) {                                       \
+    using namespace v8;                                                     \
+    Isolate *isolate = info.GetIsolate();                                   \
+    HandleScope handle_scope;                                               \
+                                                                            \
+    Proc* self= Unwrap<Proc>(info);                                         \
+    proc_t *_proc = self->_proc;                                            \
+                                                                            \
+    Local<Array> arr;                                                       \
+                                                                            \
+    if (_proc->prop) {                                                      \
+      int len = 0;                                                          \
+      while (_proc->prop[len]) len++;                                       \
+                                                                            \
+      arr = Array::New(len);                                                \
+                                                                            \
+      int i = 0;                                                            \
+      for (i = 0; i < len; i++) {                                           \
+        arr->Set(i, String::New(_proc->prop[i]));                           \
+      }                                                                     \
+    } else {                                                                \
+      arr = Array::New(0);                                                  \
+    }                                                                       \
+                                                                            \
+    return handle_scope.Close(arr);                                         \
   }
 
 X(Cmdline, cmdline)
 X(Environ, environ)
 #undef X
 
-v8::Handle<v8::Object> Proc::Wrap() {
+v8::Local<v8::Value> Proc::Wrap() {
   using namespace v8;
 
-  // HandleScope handle_scope(_isolate);
-  Handle<ObjectTemplate> t = ObjectTemplate::New(_isolate);
+  HandleScope handle_scope;
+  Handle<ObjectTemplate> t = ObjectTemplate::New();
   t->SetInternalFieldCount(1);
 
 #define X(Prop, prop) \
-  t->SetAccessor(String::NewFromUtf8(_isolate, #prop), Proc::Prop);
+  t->SetAccessor(String::New(#prop), Proc::Prop);
 
   X(Tid, tid)
   X(Ppid, ppid)
@@ -264,7 +263,7 @@ v8::Handle<v8::Object> Proc::Wrap() {
 #undef X
 
   Local<Object> instance = t->NewInstance();
-  instance->SetInternalField(0, External::New(_isolate, this));
+  instance->SetInternalField(0, External::New(this));
 
-  return instance;
+  return handle_scope.Close(instance);
 }
