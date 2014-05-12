@@ -1,31 +1,36 @@
 #include "procjs.h"
 #include <cassert>
 
+#define MAX_PROCS 5000
+
 static void AddFunction(v8::Isolate* isolate, v8::Handle<v8::Object> global, const char* name, v8::FunctionCallback callback) {
   using namespace v8;
   HandleScope handle_scope(isolate);
   global->Set(String::NewFromUtf8(isolate, name), FunctionTemplate::New(isolate, callback)->GetFunction());
 }
 
-void Procjs::New(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void Procjs::New(const v8::FunctionCallbackInfo<v8::Value>& args) {
   using namespace v8;
-  Isolate *isolate = info.GetIsolate();
+  Isolate *isolate = args.GetIsolate();
   HandleScope handle_scope(isolate);
+
+  // our JS API ensures we always pass flags (defaults if none were given)
+  Local<Integer> flags = args[0].As<Integer>();
+  assert(flags->IsUint32());
 
   Handle<ObjectTemplate> t = ObjectTemplate::New();
   t->SetInternalFieldCount(1);
 
-  Procjs *self = new Procjs(isolate);
+  Procjs *self = new Procjs(isolate, flags->Uint32Value());
   Local<Object> instance = t->NewInstance();
   instance->SetInternalField(0, External::New(isolate, self));
 
   AddFunction(isolate, instance, "procs", Procjs::Procs);
   AddFunction(isolate, instance, "refresh", Procjs::Refresh);
 
-  info.GetReturnValue().Set(instance);
+  args.GetReturnValue().Set(instance);
 }
 
-#define MAX_PROCS 1000
 void Procjs::Procs(const v8::FunctionCallbackInfo<v8::Value>& args) {
   using namespace v8;
   Isolate *isolate = args.GetIsolate();
@@ -35,6 +40,7 @@ void Procjs::Procs(const v8::FunctionCallbackInfo<v8::Value>& args) {
   assert(cb->IsFunction());
 
   Procjs* self = Unwrap<Procjs>(args);
+  assert(self->_len <= MAX_PROCS && "exceeded MAX_PROCS");
 
   Local<Value> argv[MAX_PROCS];
   for (int i = 0; i < self->_len; i++) {
@@ -48,11 +54,15 @@ void Procjs::Procs(const v8::FunctionCallbackInfo<v8::Value>& args) {
   cb->NewInstance(self->_len, argv);
 }
 
-void Procjs::Refresh(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void Procjs::Refresh(const v8::FunctionCallbackInfo<v8::Value>& args) {
   using namespace v8;
-  Isolate *isolate = info.GetIsolate();
+  Isolate *isolate = args.GetIsolate();
   HandleScope handle_scope(isolate);
 
-  Procjs* self = Unwrap<Procjs>(info);
-  self->refresh();
+  // our JS API ensures we always pass flags (defaults if none were given)
+  Local<Integer> flags = args[0].As<Integer>();
+  assert(flags->IsUint32());
+
+  Procjs* self = Unwrap<Procjs>(args);
+  self->refresh(flags->Uint32Value());
 }

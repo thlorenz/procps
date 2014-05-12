@@ -34,18 +34,18 @@ public:
   X(Pcpu)       // stat (special)  %CPU usage (is not filled in by readproc!!!)
   X(State)      // stat,status     single-char code for process state (S=sleeping)
 
-  X(Utime)      // stat  user-mode CPU time accumulated by process
-  X(Stime)      // stat  kernel-mode CPU time accumulated by process
-  X(Cutime)     // stat  cumulative utime of process and reaped children
-  X(Cstime)     // stat  cumulative stime of process and reaped children
-  X(StartTime)  // stat  start time of process -- seconds since 1-1-70
+  X(Utime)      // stat            user-mode CPU time accumulated by process
+  X(Stime)      // stat            kernel-mode CPU time accumulated by process
+  X(Cutime)     // stat            cumulative utime of process and reaped children
+  X(Cstime)     // stat            cumulative stime of process and reaped children
+  X(StartTime)  // stat            start time of process -- seconds since 1-1-70
 
 
-	X(Signal)     // status  mask of pending signals) per-task for readtask() but per-proc for readproc()
-	X(Blocked)    // status  mask of blocked signals
-	X(Sigignore)  // status  mask of ignored signals
-	X(Sigcatch)   // status  mask of caught  signals
-	X(_Sigpnd)    // status  mask of PER TASK pending signals
+	X(Signal)     // status          mask of pending signals) per-task for readtask() but per-proc for readproc()
+	X(Blocked)    // status          mask of blocked signals
+	X(Sigignore)  // status          mask of ignored signals
+	X(Sigcatch)   // status          mask of caught  signals
+	X(_Sigpnd)    // status          mask of PER TASK pending signals
 
 	X(StartCode)  // stat            address of beginning of code segment
 	X(EndCode)    // stat            address of end of code segment
@@ -145,21 +145,7 @@ class Procjs {
    * The third argument is the length of the list (currently only used for lists of user
    * id's since uid_t supports no convenient termination sentinel.)
    */
-  static proc_t **get_proctab() {
-    int flags = 0;
-    flags = flags
-      | PROC_FILLMEM     // read statm
-      | PROC_FILLCOM     // alloc and fill in `cmdline'
-      | PROC_FILLENV     // alloc and fill in `environ'
-      | PROC_FILLUSR     // resolve user id number -> user name
-      | PROC_FILLGRP     // resolve group id number -> group name
-      | PROC_FILLSTATUS  // read status -- currently unconditional
-      | PROC_FILLSTAT    // read stat -- currently unconditional
-      | PROC_FILLWCHAN   // look up WCHAN name
-      | PROC_FILLARG     // alloc and fill in `cmdline'
-      | PROC_LOOSE_TASKS // treat threads as if they were processes
-    ;
-
+  static proc_t **get_proctab(uint32_t flags) {
     return readproctab(flags);
   }
 
@@ -168,20 +154,19 @@ class Procjs {
     return new Proc(_isolate, _pt[idx]);
   };
 
-  void refresh() {
-    _pt = get_proctab();
+  void refresh(uint32_t flags) {
+    _pt = get_proctab(flags);
     _len = -1;
 
     while(*(_pt + (++_len)));
   }
 
 public:
-  Procjs(v8::Isolate* isolate): _isolate(isolate) {
-    refresh();
+  Procjs(v8::Isolate* isolate, uint32_t flags): _isolate(isolate) {
+    refresh(flags);
   }
 
   static void New(const v8::FunctionCallbackInfo<v8::Value>& info);
-  //static void Procs(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info);
   static void Procs(const v8::FunctionCallbackInfo<v8::Value>& info);
   static void Refresh(const v8::FunctionCallbackInfo<v8::Value>& info);
 };
