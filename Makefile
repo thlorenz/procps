@@ -11,16 +11,13 @@ LIBPROC = $(PROCPS)proc/libproc.a
 
 CFLAGS = -I$(PROCPS) -I$(V8)include/
 # linking didn't work, using procps objects for now
-LDFLAGS =                                                          \
+LDFLAGS =                                                        \
   $(LIBPROC)                                                     \
-	-Wl,--start-group                                                \
-			$(V8)/out/$(V8_ARCH)/obj.target/third_party/icu/libicuuc.a   \
-			$(V8)/out/$(V8_ARCH)/obj.target/third_party/icu/libicui18n.a \
-			$(V8)/out/$(V8_ARCH)/obj.target/third_party/icu/libicudata.a \
-			$(V8)/out/$(V8_ARCH)/obj.target/tools/gyp/libv8_base.x64.a   \
-			$(V8)/out/$(V8_ARCH)/obj.target/tools/gyp/libv8_snapshot.a   \
-	-Wl,--end-group                                                  \
-	-lpthread																												 \
+	-Wl,--start-group                                              \
+			$(V8)/out/$(V8_ARCH)/obj.target/tools/gyp/libv8_base.a     \
+			$(V8)/out/$(V8_ARCH)/obj.target/tools/gyp/libv8_snapshot.a \
+	-Wl,--end-group                                                \
+	-lpthread                                                      \
 	-lrt 
 
 build: $(LIBPROC) $(V8LIB)
