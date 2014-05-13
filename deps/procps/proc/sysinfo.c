@@ -599,7 +599,7 @@ void meminfo(void){
       goto nextline;
     }
     strcpy(namebuf,head);
-    found = bsearch(&findme, mem_table, mem_table_count,
+    found = (mem_table_struct*) bsearch(&findme, mem_table, mem_table_count,
         sizeof(mem_table_struct), compare_mem_table_structs
     );
     head = tail+1;
@@ -752,7 +752,7 @@ void vminfo(void){
       goto nextline;
     }
     strcpy(namebuf,head);
-    found = bsearch(&findme, vm_table, vm_table_count,
+    found = (vm_table_struct*) bsearch(&findme, vm_table, vm_table_count,
         sizeof(vm_table_struct), compare_vm_table_structs
     );
     head = tail+1;
@@ -815,7 +815,7 @@ unsigned int getdiskstat(struct disk_stat **disks, struct partition_stat **parti
     }
     fields = sscanf(buff, " %*d %*d %*s %*u %*u %*u %*u %*u %*u %*u %*u %*u %*u %u", &dummy);
     if (fields == 1){
-      (*disks) = realloc(*disks, (cDisk+1)*sizeof(struct disk_stat));
+      (*disks) = (disk_stat*) realloc(*disks, (cDisk+1)*sizeof(struct disk_stat));
       sscanf(buff,  "   %*d    %*d %15s %u %u %llu %u %u %u %llu %u %u %u %u",
         //&disk_major,
         //&disk_minor,
@@ -835,7 +835,7 @@ unsigned int getdiskstat(struct disk_stat **disks, struct partition_stat **parti
         (*disks)[cDisk].partitions=0;
       cDisk++;
     }else{
-      (*partitions) = realloc(*partitions, (cPartition+1)*sizeof(struct partition_stat));
+      (*partitions) = (partition_stat*) realloc(*partitions, (cPartition+1)*sizeof(struct partition_stat));
       fflush(stdout);
       sscanf(buff,  "   %*d    %*d %15s %u %llu %u %u",
         //&part_major,
@@ -867,7 +867,7 @@ unsigned int getslabinfo (struct slab_cache **slab){
   while (fgets(buff,BUFFSIZE-1,fd)){
     if(!memcmp("slabinfo - version:",buff,19)) continue; // skip header
     if(*buff == '#')                           continue; // skip comments
-    (*slab) = realloc(*slab, (cSlab+1)*sizeof(struct slab_cache));
+    (*slab) = (slab_cache*) realloc(*slab, (cSlab+1)*sizeof(struct slab_cache));
     sscanf(buff,  "%47s %u %u %u %u",  // allow 47; max seen is 24
       (*slab)[cSlab].name,
       &(*slab)[cSlab].active_objs,

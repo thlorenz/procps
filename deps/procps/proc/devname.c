@@ -1,13 +1,13 @@
 /*
- * Copyright 1998-2002 by Albert Cahalan; all rights resered.         
+ * Copyright 1998-2002 by Albert Cahalan; all rights resered.
  * This file may be used subject to the terms and conditions of the
- * GNU Library General Public License Version 2, or any later version  
+ * GNU Library General Public License Version 2, or any later version
  * at your option, as published by the Free Software Foundation.
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Library General Public License for more details.
- */                                 
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -69,13 +69,13 @@ static void load_drivers(void){
   p = buf;
   while(( p = strstr(p, " /dev/") )){  // " /dev/" is the second column
     tty_map_node *tmn;
-    int len;
+    unsigned int len;
     char *end;
     p += 6;
     end = strchr(p, ' ');
     if(!end) continue;
     len = end - p;
-    tmn = calloc(1, sizeof(tty_map_node));
+    tmn = (tty_map_node*) calloc(1, sizeof(tty_map_node));
     tmn->next = tty_map;
     tty_map = tmn;
     /* if we have a devfs type name such as /dev/tts/%d then strip the %d but
@@ -134,7 +134,7 @@ static int driver_name(char *restrict const buf, unsigned maj, unsigned min){
 }
 
 // major 204 is a mess -- "Low-density serial ports"
-static const char low_density_names[][6] = {
+static const char low_density_names[][7] = {
 "LU0",  "LU1",  "LU2",  "LU3",
 "FB0",
 "SA0",  "SA1",  "SA2",
