@@ -37,23 +37,12 @@ extern void __cyg_profile_func_enter(void*,void*);
 #define LEAVE(x)
 #endif
 
-// convert hex string to unsigned long long
-static unsigned long long unhex(const char *restrict cp){
-    unsigned long long ull = 0;
-    for(;;){
-        char c = *cp++;
-        if(unlikely(c<0x30)) break;
-        ull = (ull<<4) | (c - (c>0x57) ? 0x57 : 0x30) ;
-    }
-    return ull;
-}
-
 static int task_dir_missing;
 
 ///////////////////////////////////////////////////////////////////////////
 
 typedef struct status_table_struct {
-    unsigned char name[7];        // /proc/*/status field name
+    unsigned char name[8];        // /proc/*/status field name
     unsigned char len;            // name length
 #ifdef LABEL_OFFSET
     long offset;                  // jump address offset
@@ -173,7 +162,7 @@ ENTER(0x220);
         // examine a field name (hash and compare)
     base:
         if(unlikely(!*S)) break;
-        entry = table[63 & (asso[S[3]] + asso[S[2]] + asso[S[0]])];
+        entry = table[63 & (asso[(unsigned int)S[3]] + asso[(unsigned int)S[2]] + asso[(unsigned int)S[0]])];
         colon = strchr(S, ':');
         if(unlikely(!colon)) break;
         if(unlikely(colon[1]!='\t')) break;
@@ -348,7 +337,7 @@ ENTER(0x160);
     P->nlwp = 0;
 
     S = strchr(S, '(') + 1;
-    tmp = strrchr(S, ')');
+    tmp = (char*) strrchr(S, ')');
     num = tmp - S;
     if(unlikely(num >= sizeof P->cmd)) num = sizeof P->cmd - 1;
     memcpy(P->cmd, S, num);
@@ -368,7 +357,7 @@ ENTER(0x160);
        "%ld "
        "%lu %"KLF"u %"KLF"u %"KLF"u %"KLF"u %"KLF"u "
        "%*s %*s %*s %*s " /* discard, no RT signals & Linux 2.1 used hex */
-       "%"KLF"u %*lu %*lu "
+       "%"KLF"u %*u %*u "
        "%d %d "
        "%lu %lu",
        &P->state,
@@ -400,11 +389,11 @@ LEAVE(0x160);
 /////////////////////////////////////////////////////////////////////////
 
 static void statm2proc(const char* s, proc_t *restrict P) {
-    int num;
+    /*int num;
     num = sscanf(s, "%ld %ld %ld %ld %ld %ld %ld",
 	   &P->size, &P->resident, &P->share,
 	   &P->trs, &P->lrs, &P->drs, &P->dt);
-/*    fprintf(stderr, "statm2proc converted %d fields.\n",num); */
+    fprintf(stderr, "statm2proc converted %d fields.\n",num);*/
 }
 
 static int file2str(const char *directory, const char *what, char *ret, int cap) {
@@ -444,7 +433,7 @@ static char** file2strvec(const char* directory, const char* what) {
 	}
 	if (end_of_file && buf[n-1])		/* last read char not null */
 	    buf[n++] = '\0';			/* so append null-terminator */
-	rbuf = xrealloc(rbuf, tot + n);		/* allocate more memory */
+	rbuf = (char*) xrealloc(rbuf, tot + n);		/* allocate more memory */
 	memcpy(rbuf + tot, buf, n);		/* copy buffer into it */
 	tot += n;				/* increment total byte ctr */
 	if (end_of_file)
@@ -462,12 +451,12 @@ static char** file2strvec(const char* directory, const char* what) {
 	    c += sizeof(char*);
     c += sizeof(char*);				/* one extra for NULL term */
 
-    rbuf = xrealloc(rbuf, tot + c + align);	/* make room for ptrs AT END */
+    rbuf = (char*) xrealloc(rbuf, tot + c + align);	/* make room for ptrs AT END */
     endbuf = rbuf + tot;			/* addr just past data buf */
     q = ret = (char**) (endbuf+align);		/* ==> free(*ret) to dealloc */
     *q++ = p = rbuf;				/* point ptrs to the strings */
     endbuf--;					/* do not traverse final NUL */
-    while (++p < endbuf) 
+    while (++p < endbuf)
     	if (!*p)				/* NUL char implies that */
 	    *q++ = p+1;				/* next string -> next char */
 
@@ -598,7 +587,7 @@ static proc_t* simple_readproc(PROCTAB *restrict const PT, proc_t *restrict cons
 	p->environ = file2strvec(path, "environ");
     else
         p->environ = NULL;
-    
+
     return p;
 next_proc:
     return NULL;
@@ -776,7 +765,7 @@ proc_t* readproc(PROCTAB *restrict const PT, proc_t *restrict p) {
 //  }
 
   saved_p = p;
-  if(!p) p = xcalloc(p, sizeof *p); /* passed buf or alloced mem */
+  if(!p) p = (proc_t*) xcalloc(p, sizeof *p); /* passed buf or alloced mem */
 
   for(;;){
     // fills in the path, plus p->tid and p->tgid
@@ -804,7 +793,7 @@ proc_t* readtask(PROCTAB *restrict const PT, const proc_t *restrict const p, pro
   proc_t *saved_t;
 
   saved_t = t;
-  if(!t) t = xcalloc(t, sizeof *t); /* passed buf or alloced mem */
+  if(!t) t = (proc_t*) xcalloc(t, sizeof *t); /* passed buf or alloced mem */
 
   // 1. got to fake a thread for old kernels
   // 2. for single-threaded processes, this is faster (but must patch up stuff that differs!)
@@ -842,7 +831,7 @@ PROCTAB* openproc(int flags, ...) {
     va_list ap;
     struct stat sbuf;
     static int did_stat;
-    PROCTAB* PT = xmalloc(sizeof(PROCTAB));
+    PROCTAB* PT = (PROCTAB*) xmalloc(sizeof(PROCTAB));
 
     if(!did_stat){
       task_dir_missing = stat("/proc/self/task", &sbuf);
@@ -943,7 +932,7 @@ proc_t** readproctab(int flags, ...) {
 	PT = openproc(flags);
     va_end(ap);
     do {					/* read table: */
-	tab = xrealloc(tab, (n+1)*sizeof(proc_t*));/* realloc as we go, using */
+	tab = (proc_t**) xrealloc(tab, (n+1)*sizeof(proc_t*));/* realloc as we go, using */
 	tab[n] = readproc_direct(PT, NULL);     /* final null to terminate */
     } while (tab[n++]);				  /* stop when NULL reached */
     closeproc(PT);
@@ -971,13 +960,13 @@ proc_data_t *readproctab2(int(*want_proc)(proc_t *buf), int(*want_task)(proc_t *
         if(n_alloc == n_used){
           //proc_t *old = data;
           n_alloc = n_alloc*5/4+30;  // grow by over 25%
-          data = realloc(data,sizeof(proc_t)*n_alloc);
+          data = (proc_t*) realloc(data,sizeof(proc_t)*n_alloc);
           //if(!data) return NULL;
         }
         if(n_proc_alloc == n_proc){
           //proc_t **old = ptab;
           n_proc_alloc = n_proc_alloc*5/4+30;  // grow by over 25%
-          ptab = realloc(ptab,sizeof(proc_t*)*n_proc_alloc);
+          ptab = (proc_t**) realloc(ptab,sizeof(proc_t*)*n_proc_alloc);
           //if(!ptab) return NULL;
         }
         tmp = readproc_direct(PT, data+n_used);
@@ -990,7 +979,7 @@ proc_data_t *readproctab2(int(*want_proc)(proc_t *buf), int(*want_task)(proc_t *
           if(n_alloc == n_used){
             proc_t *old = data;
             n_alloc = n_alloc*5/4+30;  // grow by over 25%
-            data = realloc(data,sizeof(proc_t)*n_alloc);
+            data = (proc_t*) realloc(data,sizeof(proc_t)*n_alloc);
 	    // have to move tmp too
 	    tmp = data+(tmp-old);
             //if(!data) return NULL;
@@ -998,7 +987,7 @@ proc_data_t *readproctab2(int(*want_proc)(proc_t *buf), int(*want_task)(proc_t *
           if(n_task_alloc == n_task){
             //proc_t **old = ttab;
             n_task_alloc = n_task_alloc*5/4+1;  // grow by over 25%
-            ttab = realloc(ttab,sizeof(proc_t*)*n_task_alloc);
+            ttab = (proc_t**) realloc(ttab,sizeof(proc_t*)*n_task_alloc);
             //if(!ttab) return NULL;
           }
           t = readtask_direct(PT, tmp, data+n_used);
@@ -1008,7 +997,7 @@ proc_data_t *readproctab2(int(*want_proc)(proc_t *buf), int(*want_task)(proc_t *
         }
     }
 
-    pd = malloc(sizeof(proc_data_t));
+    pd = (proc_data_t*) malloc(sizeof(proc_data_t));
     pd->proc = ptab;
     pd->task = ttab;
     pd->nproc = n_proc;

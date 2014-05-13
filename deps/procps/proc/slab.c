@@ -1,4 +1,4 @@
-/* 
+/*
  * slab.c - slab related functions for libproc
  *
  * Chris Rivera <cmrivera@ufl.edu>
@@ -41,7 +41,7 @@ static struct slab_info *get_slabnode(void)
 		node = free_index;
 		free_index = free_index->next;
 	} else {
-		node = malloc(sizeof(struct slab_info));
+		node = (struct slab_info*) malloc(sizeof(struct slab_info));
 		if (!node)
 			perror("malloc");
 	}
@@ -51,7 +51,7 @@ static struct slab_info *get_slabnode(void)
 
 /*
  * slab_badname_detect - return true if current slab was declared with
- *                       whitespaces for instance 
+ *                       whitespaces for instance
  *			 FIXME :Other cases ?
  */
 
@@ -61,9 +61,9 @@ static int slab_badname_detect(const char *restrict buffer)
 	while (*buffer){
 		if((*buffer)==' ')
 			numberarea=1;
-		if(isalpha(*buffer)&&numberarea)	
+		if(isalpha(*buffer)&&numberarea)
 			return 1;
-		buffer++;	
+		buffer++;
 	}
 	return 0;
 }
@@ -90,33 +90,33 @@ void free_slabinfo(struct slab_info *list)
 }
 
 // parse_slabinfo20 - actual parse routine for slabinfo 2.x (2.6 kernels)
-// Note: difference between 2.0 and 2.1 is in the ": globalstat" part where version 2.1 
+// Note: difference between 2.0 and 2.1 is in the ": globalstat" part where version 2.1
 // has extra column <nodeallocs>. We don't use ": globalstat" part in both versions.
 //
 // Formats (we don't use "statistics" extensions)
 //
 //  slabinfo - version: 2.1
-//  # name            <active_objs> <num_objs> <objsize> <objperslab> <pagesperslab> \
-//  : tunables <batchcount> <limit> <sharedfactor> \
+//  # name            <active_objs> <num_objs> <objsize> <objperslab> <pagesperslab>
+//  : tunables <batchcount> <limit> <sharedfactor>
 //  : slabdata <active_slabs> <num_slabs> <sharedavail>
 //
 //  slabinfo - version: 2.1 (statistics)
-//  # name            <active_objs> <num_objs> <objsize> <objperslab> <pagesperslab> \
-//  : tunables <batchcount> <limit> <sharedfactor> \
-//  : slabdata <active_slabs> <num_slabs> <sharedavail> \
-//  : globalstat <listallocs> <maxobjs> <grown> <reaped> <error> <maxfreeable> <freelimit> <nodeallocs> \
+//  # name            <active_objs> <num_objs> <objsize> <objperslab> <pagesperslab>
+//  : tunables <batchcount> <limit> <sharedfactor>
+//  : slabdata <active_slabs> <num_slabs> <sharedavail>
+//  : globalstat <listallocs> <maxobjs> <grown> <reaped> <error> <maxfreeable> <freelimit> <nodeallocs>
 //  : cpustat <allochit> <allocmiss> <freehit> <freemiss>
-//             
+//
 //  slabinfo - version: 2.0
-//  # name            <active_objs> <num_objs> <objsize> <objperslab> <pagesperslab> \
-//  : tunables <batchcount> <limit> <sharedfactor> \
+//  # name            <active_objs> <num_objs> <objsize> <objperslab> <pagesperslab>
+//  : tunables <batchcount> <limit> <sharedfactor>
 //  : slabdata <active_slabs> <num_slabs> <sharedavail>
 //
 //  slabinfo - version: 2.0 (statistics)
-//  # name            <active_objs> <num_objs> <objsize> <objperslab> <pagesperslab> \
-//  : tunables <batchcount> <limit> <sharedfactor> \
-//  : slabdata <active_slabs> <num_slabs> <sharedavail> \
-//  : globalstat <listallocs> <maxobjs> <grown> <reaped> <error> <maxfreeable> <freelimit> \
+//  # name            <active_objs> <num_objs> <objsize> <objperslab> <pagesperslab>
+//  : tunables <batchcount> <limit> <sharedfactor>
+//  : slabdata <active_slabs> <num_slabs> <sharedavail>
+//  : globalstat <listallocs> <maxobjs> <grown> <reaped> <error> <maxfreeable> <freelimit>
 //  : cpustat <allochit> <allocmiss> <freehit> <freemiss>
 static int parse_slabinfo20(struct slab_info **list, struct slab_stat *stats,
 				FILE *f)
@@ -134,7 +134,7 @@ static int parse_slabinfo20(struct slab_info **list, struct slab_stat *stats,
 
 		if (buffer[0] == '#')
 			continue;
-	
+
 		curr = get_slabnode();
 		if (!curr)
 			break;
@@ -146,8 +146,8 @@ static int parse_slabinfo20(struct slab_info **list, struct slab_stat *stats,
 
 		assigned = sscanf(buffer, "%" STRINGIFY(SLAB_INFO_NAME_LEN)
 				"s %d %d %d %d %d : tunables %*d %*d %*d : \
-				slabdata %d %d %*d", curr->name, 
-				&curr->nr_active_objs, &curr->nr_objs, 
+				slabdata %d %d %*d", curr->name,
+				&curr->nr_active_objs, &curr->nr_objs,
 				&curr->obj_size, &curr->objs_per_slab,
 				&curr->pages_per_slab, &curr->nr_active_slabs,
 				&curr->nr_slabs);
@@ -231,7 +231,7 @@ static int parse_slabinfo11(struct slab_info **list, struct slab_stat *stats,
 		if (assigned < 6) {
 			fprintf(stderr, "unrecognizable data in  your slabinfo version 1.1\n\r");
 			if(slab_badname_detect(buffer))
-				fprintf(stderr, "Found an error in cache name at line %s\n", buffer); 
+				fprintf(stderr, "Found an error in cache name at line %s\n", buffer);
 			curr = NULL;
 			break;
 		}
@@ -251,7 +251,7 @@ static int parse_slabinfo11(struct slab_info **list, struct slab_stat *stats,
 
 		if (curr->obj_size)
 			curr->objs_per_slab = curr->pages_per_slab *
-					page_size / curr->obj_size;		
+					page_size / curr->obj_size;
 
 		stats->nr_objs += curr->nr_objs;
 		stats->nr_active_objs += curr->nr_active_objs;

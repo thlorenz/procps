@@ -15,9 +15,11 @@
 #include "version.h"
 
 #ifdef MINORVERSION
-const char procps_version[] = "procps version " VERSION "." SUBVERSION "." MINORVERSION;
+//const char procps_version[] = "procps version " VERSION "." SUBVERSION "." MINORVERSION;
+const char procps_version[] = "procps version 1.1.1";
 #else
-const char procps_version[] = "procps version " VERSION "." SUBVERSION;
+//const char procps_version[] = "procps version " VERSION "." SUBVERSION;
+const char procps_version[] = "procps version 1.1";
 #endif
 
 void display_version(void) {
@@ -37,7 +39,7 @@ static void init_Linux_version(void) __attribute__((constructor));
 static void init_Linux_version(void) {
     static struct utsname uts;
     int x = 0, y = 0, z = 0;	/* cleared in case sscanf() < 3 */
-    
+
     if (uname(&uts) == -1)	/* failure implies impending death */
 	exit(1);
     if (sscanf(uts.release, "%d.%d.%d", &x, &y, &z) < 3)

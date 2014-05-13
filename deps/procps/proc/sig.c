@@ -116,7 +116,7 @@ int signal_name_to_number(const char *restrict name){
   /* search the table */
   {
     const mapstruct ms = {name,0};
-    const mapstruct *restrict const ptr = bsearch(
+    const mapstruct *restrict const ptr = (const mapstruct*) bsearch(
       &ms,
       sigtable,
       number_of_signals,

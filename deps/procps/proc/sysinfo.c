@@ -222,7 +222,7 @@ static void init_libproc(void){
   smp_num_cpus = sysconf(_SC_NPROCESSORS_ONLN);
   if(smp_num_cpus<1) smp_num_cpus=1; /* SPARC glibc is buggy */
 
-  if(linux_version_code > LINUX_VERSION(2, 4, 0)){ 
+  if(linux_version_code > LINUX_VERSION(2, 4, 0)){
     Hertz = find_elf_note(AT_CLKTCK);
     if(Hertz!=NOTE_NOT_FOUND) return;
     fputs("2.4+ kernel w/o ELF notes? -- report this\n", stderr);
@@ -256,7 +256,7 @@ void eight_cpu_numbers(double *restrict uret, double *restrict nret, double *res
     new_y = 0;
     tmp_z = 0.0;
     new_z = 0;
- 
+
     FILE_TO_BUF(STAT_FILE,stat_fd);
     sscanf(buf, "cpu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu", &new_u, &new_n, &new_s, &new_i, &new_w, &new_x, &new_y, &new_z);
     ticks_past = (new_u+new_n+new_s+new_i+new_w+new_x+new_y+new_z)-(old_u+old_n+old_s+old_i+old_w+old_x+old_y+old_z);
@@ -304,7 +304,7 @@ void eight_cpu_numbers(double *restrict uret, double *restrict nret, double *res
 void loadavg(double *restrict av1, double *restrict av5, double *restrict av15) {
     double avg_1=0, avg_5=0, avg_15=0;
     char *restrict savelocale;
-    
+
     FILE_TO_BUF(LOADAVG_FILE,loadavg_fd);
     savelocale = setlocale(LC_NUMERIC, NULL);
     setlocale(LC_NUMERIC, "C");
@@ -389,7 +389,7 @@ void getstat(jiff *restrict cuse, jiff *restrict cice, jiff *restrict csys, jiff
     if(fd == -1) crash("/proc/stat");
   }
   read(fd,buff,BUFFSIZE-1);
-  *intr = 0; 
+  *intr = 0;
   *ciow = 0;  /* not separated out until the 2.5.41 kernel */
   *cxxx = 0;  /* not separated out until the 2.6.0-test4 kernel */
   *cyyy = 0;  /* not separated out until the 2.6.0-test4 kernel */
@@ -599,7 +599,7 @@ void meminfo(void){
       goto nextline;
     }
     strcpy(namebuf,head);
-    found = bsearch(&findme, mem_table, mem_table_count,
+    found = (mem_table_struct*) bsearch(&findme, mem_table, mem_table_count,
         sizeof(mem_table_struct), compare_mem_table_structs
     );
     head = tail+1;
@@ -661,21 +661,21 @@ unsigned long vm_pageoutrun;  // times kswapd ran page reclaim
 unsigned long vm_allocstall; // times a page allocator ran direct reclaim
 unsigned long vm_pgrotated; // pages rotated to the tail of the LRU for immediate reclaim
 // seen on a 2.6.8-rc1 kernel, apparently replacing old fields
-static unsigned long vm_pgalloc_dma;          // 
-static unsigned long vm_pgalloc_high;         // 
-static unsigned long vm_pgalloc_normal;       // 
-static unsigned long vm_pgrefill_dma;         // 
-static unsigned long vm_pgrefill_high;        // 
-static unsigned long vm_pgrefill_normal;      // 
-static unsigned long vm_pgscan_direct_dma;    // 
-static unsigned long vm_pgscan_direct_high;   // 
-static unsigned long vm_pgscan_direct_normal; // 
-static unsigned long vm_pgscan_kswapd_dma;    // 
-static unsigned long vm_pgscan_kswapd_high;   // 
-static unsigned long vm_pgscan_kswapd_normal; // 
-static unsigned long vm_pgsteal_dma;          // 
-static unsigned long vm_pgsteal_high;         // 
-static unsigned long vm_pgsteal_normal;       // 
+static unsigned long vm_pgalloc_dma;          //
+static unsigned long vm_pgalloc_high;         //
+static unsigned long vm_pgalloc_normal;       //
+static unsigned long vm_pgrefill_dma;         //
+static unsigned long vm_pgrefill_high;        //
+static unsigned long vm_pgrefill_normal;      //
+static unsigned long vm_pgscan_direct_dma;    //
+static unsigned long vm_pgscan_direct_high;   //
+static unsigned long vm_pgscan_direct_normal; //
+static unsigned long vm_pgscan_kswapd_dma;    //
+static unsigned long vm_pgscan_kswapd_high;   //
+static unsigned long vm_pgscan_kswapd_normal; //
+static unsigned long vm_pgsteal_dma;          //
+static unsigned long vm_pgsteal_high;         //
+static unsigned long vm_pgsteal_normal;       //
 // seen on a 2.6.8-rc1 kernel
 static unsigned long vm_kswapd_inodesteal;    //
 static unsigned long vm_nr_unstable;          //
@@ -752,7 +752,7 @@ void vminfo(void){
       goto nextline;
     }
     strcpy(namebuf,head);
-    found = bsearch(&findme, vm_table, vm_table_count,
+    found = (vm_table_struct*) bsearch(&findme, vm_table, vm_table_count,
         sizeof(vm_table_struct), compare_vm_table_structs
     );
     head = tail+1;
@@ -804,7 +804,7 @@ unsigned int getdiskstat(struct disk_stat **disks, struct partition_stat **parti
 
   *disks = NULL;
   *partitions = NULL;
-  buff[BUFFSIZE-1] = 0; 
+  buff[BUFFSIZE-1] = 0;
   fd = fopen("/proc/diskstats", "rb");
   if(!fd) crash("/proc/diskstats");
 
@@ -815,7 +815,7 @@ unsigned int getdiskstat(struct disk_stat **disks, struct partition_stat **parti
     }
     fields = sscanf(buff, " %*d %*d %*s %*u %*u %*u %*u %*u %*u %*u %*u %*u %*u %u", &dummy);
     if (fields == 1){
-      (*disks) = realloc(*disks, (cDisk+1)*sizeof(struct disk_stat));
+      (*disks) = (disk_stat*) realloc(*disks, (cDisk+1)*sizeof(struct disk_stat));
       sscanf(buff,  "   %*d    %*d %15s %u %u %llu %u %u %u %llu %u %u %u %u",
         //&disk_major,
         //&disk_minor,
@@ -835,7 +835,7 @@ unsigned int getdiskstat(struct disk_stat **disks, struct partition_stat **parti
         (*disks)[cDisk].partitions=0;
       cDisk++;
     }else{
-      (*partitions) = realloc(*partitions, (cPartition+1)*sizeof(struct partition_stat));
+      (*partitions) = (partition_stat*) realloc(*partitions, (cPartition+1)*sizeof(struct partition_stat));
       fflush(stdout);
       sscanf(buff,  "   %*d    %*d %15s %u %llu %u %u",
         //&part_major,
@@ -847,7 +847,7 @@ unsigned int getdiskstat(struct disk_stat **disks, struct partition_stat **parti
         &(*partitions)[cPartition].requested_writes
       );
       (*partitions)[cPartition++].parent_disk = cDisk-1;
-      (*disks)[cDisk-1].partitions++;	
+      (*disks)[cDisk-1].partitions++;
     }
   }
 
@@ -860,14 +860,14 @@ unsigned int getdiskstat(struct disk_stat **disks, struct partition_stat **parti
 unsigned int getslabinfo (struct slab_cache **slab){
   FILE* fd;
   int cSlab = 0;
-  buff[BUFFSIZE-1] = 0; 
+  buff[BUFFSIZE-1] = 0;
   *slab = NULL;
   fd = fopen("/proc/slabinfo", "rb");
   if(!fd) crash("/proc/slabinfo");
   while (fgets(buff,BUFFSIZE-1,fd)){
     if(!memcmp("slabinfo - version:",buff,19)) continue; // skip header
     if(*buff == '#')                           continue; // skip comments
-    (*slab) = realloc(*slab, (cSlab+1)*sizeof(struct slab_cache));
+    (*slab) = (slab_cache*) realloc(*slab, (cSlab+1)*sizeof(struct slab_cache));
     sscanf(buff,  "%47s %u %u %u %u",  // allow 47; max seen is 24
       (*slab)[cSlab].name,
       &(*slab)[cSlab].active_objs,

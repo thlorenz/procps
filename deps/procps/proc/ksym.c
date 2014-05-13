@@ -230,7 +230,7 @@ static void read_file(const char *restrict filename, char **bufp, unsigned *rest
   unsigned room = *roomp;
 
   if(!room) goto hell;     /* failed before */
-  if(!buf) buf = malloc(room);
+  if(!buf) buf = (char*) malloc(room);
   if(!buf) goto hell;
 open_again:
   fd = open(filename, O_RDONLY|O_NOCTTY|O_NONBLOCK);
@@ -257,13 +257,13 @@ open_again:
       total += done;
       /* more to go, but no room in buffer */
       room *= 2;
-      tmp = realloc(buf, room);
+      tmp = (char*) realloc(buf, room);
       if(!tmp) goto hell;
       buf = tmp;
       continue;
     }
     if(done>0 && done<(ssize_t)room-total-1){
-      total += done; 
+      total += done;
       continue;   /* OK, we read some. Go do more. */
     }
     fprintf(stderr,"%ld can't happen\n", (long)done);
@@ -298,7 +298,7 @@ static int parse_ksyms(void) {
     idx_room *= 2;
     vp = realloc(ksyms_index, sizeof(symb)*idx_room);
     if(!vp) goto bad_alloc;
-    ksyms_index = vp;
+    ksyms_index = (symb*) vp;
 bypass:
     for(;;){
       char *saved;
@@ -349,7 +349,7 @@ static int sysmap_mmap(const char *restrict const filename, message_fn message) 
   if(!S_ISREG(sbuf.st_mode)) goto bad_open;
   if(sbuf.st_size < 5000) goto bad_open;  /* if way too small */
   /* Would be shared read-only, but we want '\0' after each name. */
-  endp = mmap(0, sbuf.st_size + 1, PROT_READ|PROT_WRITE, MAP_PRIVATE, fd, 0);
+  endp = (char*) mmap(0, sbuf.st_size + 1, PROT_READ|PROT_WRITE, MAP_PRIVATE, fd, 0);
   sysmap_data = endp;
   while(*endp==' '){  /* damn Alpha machine types */
     if(strncmp(endp,"                 w ", 19)) goto bad_parse;
@@ -369,7 +369,7 @@ static int sysmap_mmap(const char *restrict const filename, message_fn message) 
     sysmap_room *= 2;
     vp = realloc(sysmap_index, sizeof(symb)*sysmap_room);
     if(!vp) goto bad_alloc;
-    sysmap_index = vp;
+    sysmap_index = (symb*) vp;
     for(;;){
       char *vstart;
       if(endp - sysmap_data >= sbuf.st_size){   /* if we reached the end */
@@ -577,7 +577,6 @@ static const char * read_wchan_file(unsigned pid){
 
 /***************************************/
 
-static const symb fail = { .name = "?" };
 static const char dash[] = "-";
 static const char star[] = "*";
 
@@ -590,6 +589,9 @@ const char * lookup_wchan(unsigned KLONG address, unsigned pid) {
   const symb *good_symb;
   const char *ret;
   unsigned hash;
+
+  symb fail;
+  fail.name = "?";
 
   // can't cache it due to a race condition :-(
   if(use_wchan_file) return read_wchan_file(pid);
