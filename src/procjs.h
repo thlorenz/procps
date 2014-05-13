@@ -6,7 +6,6 @@
 
 template <typename T, typename CallbackInfo> T* Unwrap(const CallbackInfo& info) {
   using namespace v8;
-  Isolate *isolate = info.GetIsolate();
   HandleScope handle_scope;
 
   Local<Object> self = info.Holder();

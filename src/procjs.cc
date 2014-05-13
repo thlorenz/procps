@@ -1,3 +1,4 @@
+#include <node.h>
 #include "procjs.h"
 #include <cassert>
 
@@ -10,7 +11,6 @@ void AddFunction(v8::Handle<v8::Object> global, const char* name, FunctionCallba
 
 v8::Handle<v8::Value> Procjs::New(const v8::Arguments& args) {
   using namespace v8;
-  Isolate *isolate = args.GetIsolate();
   HandleScope handle_scope;
 
   // our JS API ensures we always pass flags (defaults if none were given)
@@ -20,7 +20,7 @@ v8::Handle<v8::Value> Procjs::New(const v8::Arguments& args) {
   Handle<ObjectTemplate> t = ObjectTemplate::New();
   t->SetInternalFieldCount(1);
 
-  Procjs *self = new Procjs(isolate, flags->Uint32Value());
+  Procjs *self = new Procjs(args.GetIsolate(), flags->Uint32Value());
   Local<Object> instance = t->NewInstance();
   instance->SetInternalField(0, External::New(self));
 
@@ -32,7 +32,6 @@ v8::Handle<v8::Value> Procjs::New(const v8::Arguments& args) {
 
 v8::Handle<v8::Value> Procjs::Procs(const v8::Arguments& args) {
   using namespace v8;
-  Isolate *isolate = args.GetIsolate();
   HandleScope handle_scope;
 
   Local<Function> cb = args[0].As<Function>();
@@ -42,7 +41,7 @@ v8::Handle<v8::Value> Procjs::Procs(const v8::Arguments& args) {
   assert(self->_len <= MAX_PROCS && "exceeded MAX_PROCS");
 
   Local<Value> argv[MAX_PROCS];
-  for (int i = 0; i < self->_len; i++) {
+  for (unsigned int i = 0; i < self->_len; i++) {
     argv[i] = self->procAt(i)->Wrap();
   }
 
@@ -57,7 +56,6 @@ v8::Handle<v8::Value> Procjs::Procs(const v8::Arguments& args) {
 
 v8::Handle<v8::Value> Procjs::Refresh(const v8::Arguments& args) {
   using namespace v8;
-  Isolate *isolate = args.GetIsolate();
   HandleScope handle_scope;
 
   // our JS API ensures we always pass flags (defaults if none were given)
@@ -69,3 +67,9 @@ v8::Handle<v8::Value> Procjs::Refresh(const v8::Arguments& args) {
 
   return v8::Undefined();
 }
+
+void init(v8::Handle<v8::Object> exports) {
+  exports->Set(v8::String::NewSymbol("Procjs"), v8::FunctionTemplate::New(Procjs::New)->GetFunction());
+}
+
+NODE_MODULE(procjs, init)

@@ -5,7 +5,6 @@
       v8::Local<v8::String> property,                                        \
       const v8::AccessorInfo& info) {                                        \
     using namespace v8;                                                      \
-    Isolate *isolate = info.GetIsolate();                                    \
     HandleScope handle_scope;                                                \
                                                                              \
     Proc* self = Unwrap<Proc>(info);                                         \
@@ -22,7 +21,6 @@ v8::Handle<v8::Value> Proc::State(
     v8::Local<v8::String> property,
     const v8::AccessorInfo& info) {
   using namespace v8;
-  Isolate *isolate = info.GetIsolate();
   HandleScope handle_scope;
 
   Proc* self = Unwrap<Proc>(info);
@@ -134,7 +132,6 @@ X(Processor, processor, Uint32::New)
       v8::Local<v8::String> property,                                       \
       const v8::AccessorInfo& info) {                                       \
     using namespace v8;                                                     \
-    Isolate *isolate = info.GetIsolate();                                   \
     HandleScope handle_scope;                                               \
                                                                             \
     Proc* self= Unwrap<Proc>(info);                                         \

@@ -1,0 +1,34 @@
+{
+  "name": "procjs",
+  "version": "0.0.0",
+  "description": "procps bindings",
+  "main": "index.js",
+  "directories": {
+    "example": "example"
+  },
+  "scripts": {
+    "test": "tap test/*.js",
+    "install": "node-gyp rebuild",
+    "clean": "rm -rf ./build && cd ./deps/procps && make clean",
+    "build": "CC=gcc CXX=gcc node-gyp rebuild",
+    "start": "npm run build",
+    "restart": "npm run clean && npm run start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/thlorenz/procjs"
+  },
+  "keywords": [
+    "procps",
+    "binding",
+    "memory",
+    "top"
+  ],
+  "author": "Thorsten Lorenz <thlorenz@gmx.de>",
+  "license": "MIT",
+  "gypfile": true,
+  "bugs": {
+    "url": "https://github.com/thlorenz/procjs/issues"
+  },
+  "homepage": "https://github.com/thlorenz/procjs"
+}
