@@ -3,14 +3,13 @@ include v8.mk
 ROOT	  = $(dir $(lastword $(MAKEFILE_LIST)))
 
 AR ?= ar
-CC ?= clang
-CXX = clang++
-LINK = clang++
+CC ?= gcc
+CXX = g++
+LINK = g++
 PROCPS= $(ROOT)deps/procps/
 LIBPROC = $(PROCPS)proc/libproc.a
 
 CFLAGS = -I$(PROCPS) -I$(V8)include/
-# linking didn't work, using procps objects for now
 LDFLAGS =                                                        \
   $(LIBPROC)                                                     \
 	-Wl,--start-group                                              \
