@@ -124,6 +124,7 @@ public:
   v8::Local<v8::Value> Wrap();
 };
 
+
 class Procjs {
   v8::Isolate *_isolate;
   proc_t **_pt;
@@ -145,7 +146,17 @@ class Procjs {
    * id's since uid_t supports no convenient termination sentinel.)
    */
   static proc_t **get_proctab(uint32_t flags) {
-    return readproctab(flags);
+    proc_t **pt = readproctab(flags);
+    int len = -1;
+
+    fprintf(stderr, "--- got proctab ---\n");
+    proc_t *p;
+    while((p = pt[++len])) {
+      if (p && p->ppid > 2 && p->cmd)
+        fprintf(stderr, "[%d] - [%s]\t tid: %d\t pcpu: %u\t utime: %lld\t suid: %d \n",
+          p->ppid, p->cmd, p->tid, p->pcpu, p->utime, p->suid);
+    }
+    return pt;
   }
 
 
@@ -156,8 +167,7 @@ class Procjs {
   void refresh(uint32_t flags) {
     _pt = get_proctab(flags);
     _len = -1;
-
-    while(*(_pt + (++_len)));
+    while(_pt[++_len]);
   }
 
 public:
