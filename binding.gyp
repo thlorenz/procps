@@ -5,7 +5,7 @@
       # silence warnings caused by procps
       "cflags": [ "-Wno-unused-but-set-variable", "-Wno-char-subscripts", "-Wno-unused-function", "-Wno-format", "-Wno-comment", "-Wno-sign-compare", "-Wno-padded" ],
 #"libraries": ["/home/vagrant/dev/do/procjs/deps/procps/proc/libproc.a"],
-#      "include_dirs": ["/home/vagrant/dev/do/procjs/deps/procps/proc/"],
+      "include_dirs": ["./deps/procps/"],
       # VERSION numbers are picked up by procps (see procps/proc/version.c)
       "cflags": [  "-DVERSION=\"3\"", "-DSUBVERSION=\"2\"", "-DMINORVERSION=\"8\"" ],
       "sources": [
