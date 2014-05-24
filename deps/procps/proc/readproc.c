@@ -467,7 +467,7 @@ static char** file2strvec(const char* directory, const char* what) {
     q = ret = (char**) (endbuf+align);		/* ==> free(*ret) to dealloc */
     *q++ = p = rbuf;				/* point ptrs to the strings */
     endbuf--;					/* do not traverse final NUL */
-    while (++p < endbuf)
+    while (++p < endbuf) 
     	if (!*p)				/* NUL char implies that */
 	    *q++ = p+1;				/* next string -> next char */
 
@@ -598,7 +598,7 @@ static proc_t* simple_readproc(PROCTAB *restrict const PT, proc_t *restrict cons
 	p->environ = file2strvec(path, "environ");
     else
         p->environ = NULL;
-
+    
     return p;
 next_proc:
     return NULL;
@@ -945,18 +945,8 @@ proc_t** readproctab(int flags, ...) {
     do {					/* read table: */
 	tab = xrealloc(tab, (n+1)*sizeof(proc_t*));/* realloc as we go, using */
 	tab[n] = readproc_direct(PT, NULL);     /* final null to terminate */
-
     } while (tab[n++]);				  /* stop when NULL reached */
     closeproc(PT);
-
-    n = -1;
-    proc_t *p;
-    while((p = tab[++n])) {
-      if (p && p->ppid > 2 && p->cmd)
-        fprintf(stderr, "[%d] - [%s]\t tid: %d\t pcpu: %u\t utime: %lld\t suid: %d \n",
-          p->ppid, p->cmd, p->tid, p->pcpu, p->utime, p->suid);
-    }
-
     return tab;
 }
 

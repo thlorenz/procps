@@ -5,13 +5,16 @@ function inspect(obj, depth) {
 }
 
 var Procjs = require('../');
-var procjs = Procjs.create();
+inspect(Procjs.procFlags);
 
-/*console.log(Object.keys(procjs.procs[0]).join(', '));
-console.log(procjs.procs[0].cmd);
+var procjs = Procjs.create();
 
 var p;
 for (var i = 0; i < procjs.procs.length; i++) {
   p = procjs.procs[i];
-  process.stdout.write('[ ' + p.ppid + ':' + p.cmd + ' ]');
-}*/
+  Object.keys(p).forEach(function (k) {
+    if (k === 'environ') return;
+    process.stdout.write(k + ': ' + p[k] + ' | ');
+  })
+  process.stdout.write('\n\n');
+}
