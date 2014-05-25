@@ -14,8 +14,6 @@ template <typename T, typename CallbackInfo> T* Unwrap(const CallbackInfo& info)
   return static_cast<T*>(external->Value());
 }
 
-v8::Handle<v8::String> ReadFile(v8::Isolate* isolate, const char* name);
-
 class Proc {
   v8::Isolate *_isolate;
   proc_t *_proc;
@@ -124,49 +122,4 @@ public:
   v8::Local<v8::Value> Wrap();
 };
 
-class Procjs {
-  v8::Isolate *_isolate;
-  proc_t **_pt;
-  unsigned int _len;
-
-  /*
-   * By default readproc will consider all processes as valid to parse
-   * and return, but not actually fill in the cmdline, environ, and /proc/#/statm
-   * derived memory fields.
-   *
-   * `flags' (a bitwise-or of PROC_* below) modifies the default behavior.
-   *
-   * The "fill" options will cause more of the proc_t to be filled in.
-   *
-   * The "filter" options all use the second argument as the pointer to a list of objects:
-   *    process status', process id's, user id's.
-   *
-   * The third argument is the length of the list (currently only used for lists of user
-   * id's since uid_t supports no convenient termination sentinel.)
-   */
-  static proc_t **get_proctab(uint32_t flags) {
-    return readproctab(flags);
-  }
-
-
-  Proc* procAt(const int idx) const {
-    return new Proc(_isolate, _pt[idx]);
-  };
-
-  void refresh(uint32_t flags) {
-    _pt = get_proctab(flags);
-    _len = -1;
-
-    while(*(_pt + (++_len)));
-  }
-
-public:
-  Procjs(v8::Isolate* isolate, uint32_t flags): _isolate(isolate) {
-    refresh(flags);
-  }
-
-  static v8::Handle<v8::Value> New(const v8::Arguments& info);
-  static v8::Handle<v8::Value> Procs(const v8::Arguments& info);
-  static v8::Handle<v8::Value> Refresh(const v8::Arguments& info);
-};
 #endif

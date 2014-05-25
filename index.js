@@ -1,6 +1,6 @@
 'use strict';
 
-var Procjs = require('./build/Release/procjs').Procjs;
+var procjs = require('./build/Release/procjs');
 
 var procFlags = {
     PROC_FILLMEM     : 0x0001 // read statm
@@ -28,28 +28,11 @@ var defaultFlags = 0
   | procFlags.PROC_LOOSE_TASKS
   ;
 
-function inspect(obj, depth) {
-  console.error(require('util').inspect(obj, false, depth || 5, true));
-}
-exports.create = function getProcs(flags) {
-  var pjs = new Procjs(flags || defaultFlags);
-
+exports.readproctab = function getProcs(flags) {
   var args;
   // passing result as args array instead of v8::Array return value
   // the callback is invoked synchronously
-  pjs.procs(function () { args = Array.prototype.slice.call(arguments); });
-
-  var ret =  { 
-      procs: args
-    , refresh: function (flags_) {
-        var args_;
-        pjs.refresh(flags_ || flags);
-        pjs.procs(function () { args_ = Array.prototype.slice.call(arguments); });
-        ret.procs = args_;
-      }
-  }
-  return ret;
+  procjs.readproctab(flags || defaultFlags, function () { args = Array.prototype.slice.call(arguments); });
+  return args;
 }
-
-exports.procFlags    = procFlags;
-exports.defaultFlags = defaultFlags;
+exports.readproctabFlags = procFlags;
