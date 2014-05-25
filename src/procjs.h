@@ -2,29 +2,39 @@
 #define __PROCJS_H__
 
 #include "v8.h"
+#include <nan.h>
 #include "proc/readproc.h"
 
-template <typename T, typename CallbackInfo> T* Unwrap(const CallbackInfo& info) {
-  using namespace v8;
-  HandleScope handle_scope;
+using v8::Handle;
+using v8::Value;
+using v8::Local;
+using v8::External;
 
-  Local<Object> self = info.Holder();
+using v8::String;
+using v8::Object;
+
+using v8::Isolate;
+
+template <typename T, typename CallbackInfo> T* Unwrap(const CallbackInfo& args) {
+  NanScope();
+
+  Local<Object> self = args.Holder();
   Local<External> external = Local<External>::Cast(self->GetInternalField(0));
 
   return static_cast<T*>(external->Value());
 }
 
 class Proc {
-  v8::Isolate *_isolate;
+  Isolate *_isolate;
   proc_t *_proc;
 
 public:
 
-  Proc(v8::Isolate* isolate, proc_t *proc)
+  Proc(Isolate* isolate, proc_t *proc)
     : _isolate(isolate), _proc(proc) {}
 
 #define X(Prop) \
-  static v8::Handle<v8::Value> Prop(v8::Local<v8::String> property, const v8::AccessorInfo& info);
+  static _NAN_GETTER_RETURN_TYPE Prop(Local<String> property, _NAN_GETTER_ARGS_TYPE);
 
   X(Tid)        // (special)       task id, the POSIX thread ID (see also: tgid)
   X(Ppid)       // stat,status     pid of parent process
@@ -119,7 +129,7 @@ public:
 
 #undef X
 
-  v8::Local<v8::Value> Wrap();
+  Local<Value> Wrap();
 };
 
 #endif
