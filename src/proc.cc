@@ -1,174 +1,193 @@
+#include <nan.h>
 #include "procjs.h"
 
-#define X(Prop, prop, convert)                                               \
-  v8::Handle<v8::Value> Proc::Prop(                                          \
-      v8::Local<v8::String> property,                                        \
-      const v8::AccessorInfo& info) {                                        \
-    using namespace v8;                                                      \
-    HandleScope handle_scope;                                                \
-                                                                             \
-    Proc* self = Unwrap<Proc>(info);                                         \
-    return handle_scope.Close(convert(self->_proc->prop));                   \
+using v8::Handle;
+using v8::External;
+using v8::Local;
+using v8::Value;
+using v8::ObjectTemplate;
+
+using v8::Object;
+using v8::Int32;
+using v8::Uint32;
+using v8::Integer;
+using v8::String;
+using v8::Array;
+
+
+#define X(Prop, prop, convert)                    \
+  NAN_GETTER(Proc::Prop) {                        \
+    NanScope();                                   \
+                                                  \
+    Proc* self = Unwrap<Proc>(args);              \
+    NanReturnValue(convert(self->_proc->prop));   \
   }
 
+// Need special macro here since we need to down cast to uint32_t in order to avoid compiler errors
+#define XUint32(Prop, prop)                                         \
+  NAN_GETTER(Proc::Prop) {                                          \
+    NanScope();                                                     \
+                                                                    \
+    Proc* self = Unwrap<Proc>(args);                                \
+    NanReturnValue(NanNew<Uint32>((uint32_t) self->_proc->prop));   \
+  }
 // int
-X(Tid, tid, Int32::New)
-X(Ppid, ppid, Int32::New)
+X(Tid, tid, NanNew<Int32>)
+X(Ppid, ppid, NanNew<Int32>)
 // unsigned
-X(Pcpu, pcpu, Int32::NewFromUnsigned)
-// char
-v8::Handle<v8::Value> Proc::State(
-    v8::Local<v8::String> property,
-    const v8::AccessorInfo& info) {
-  using namespace v8;
-  HandleScope handle_scope;
+X(Pcpu, pcpu, NanNew<Uint32>)
 
-  Proc* self = Unwrap<Proc>(info);
-  return handle_scope.Close(String::New(&self->_proc->state));
+// char
+NAN_GETTER(Proc::State) {
+  NanScope();
+
+  Proc* self = Unwrap<Proc>(args);
+  NanReturnValue(NanNew<String>(&self->_proc->state));
 }
 
 // unsigned long long
-X(Utime, utime, Uint32::New)
-X(Stime, stime, Uint32::New)
-X(Cutime, cutime, Uint32::New)
-X(Cstime, cstime,	Uint32::New)
-X(StartTime, start_time, Uint32::New)
+// According to http://en.wikipedia.org/wiki/C_data_types#Basic_types these are 64bit,
+// however no 64bit datatype exists in JS and in order to represent them correctly 2 Int32s should be used.
+// We'll cross that bridge when we get there, for now we'll assume these times stay below unit32_t max
+XUint32(Utime, utime)
+XUint32(Stime, stime)
+XUint32(Cutime, cutime)
+XUint32(Cstime, cstime)
+XUint32(StartTime, start_time)
+
+// unsigned KLONG
+XUint32(StartCode, start_code)
+XUint32(EndCode, end_code)
+XUint32(StartStack, start_stack)
+XUint32(KstkEsp, kstk_esp)
+XUint32(KstkEip, kstk_eip)
+XUint32(Wchan, wchan)
 
 #ifdef SIGNAL_STRING
 //  char*
-X(Signal, signal, String::New)
-X(Blocked, blocked, String::New)
-X(Sigignore, sigignore, String::New)
-X(Sigcatch, sigcatch, String::New)
-X(_Sigpnd, _sigpnd, String::New)
+X(Signal, signal, NanNew<String>)
+X(Blocked, blocked, NanNew<String>)
+X(Sigignore, sigignore, NanNew<String>)
+X(Sigcatch, sigcatch, NanNew<String>)
+X(_Sigpnd, _sigpnd, NanNew<String>)
 #else
 // long long
-X(Signal, signal, Uint32::New)
-X(Blocked, blocked, Uint32::New)
-X(Sigignore, sigignore, Uint32::New)
-X(Sigcatch, sigcatch, Uint32::New)
-X(_Sigpnd, _sigpnd, Uint32::New)
+X(Signal, signal, NanNew<Integer>)
+X(Blocked, blocked, NanNew<Integer>)
+X(Sigignore, sigignore, NanNew<Integer>)
+X(Sigcatch, sigcatch, NanNew<Integer>)
+X(_Sigpnd, _sigpnd, NanNew<Integer>)
 #endif
 
-// unsigned KLONG
-X(StartCode, start_code, Uint32::New)
-X(EndCode, end_code, Uint32::New)
-X(StartStack, start_stack, Uint32::New)
-X(KstkEsp, kstk_esp, Uint32::New)
-X(KstkEip, kstk_eip, Uint32::New)
-X(Wchan, wchan, Uint32::New)
 
 // long
-X(Priority, priority, Uint32::New)
-X(Nice, nice, Uint32::New)
-X(Rss, rss, Uint32::New)
-X(Alarm, alarm, Uint32::New)
-X(Size, size, Uint32::New)
-X(Resident, resident, Uint32::New)
-X(Share, share, Uint32::New)
-X(Trs, trs, Uint32::New)
-X(Lrs, lrs, Uint32::New)
-X(Drs, drs, Uint32::New)
-X(Dt, dt, Uint32::New)
+X(Priority, priority, NanNew<Integer>)
+X(Nice, nice, NanNew<Integer>)
+X(Rss, rss, NanNew<Integer>)
+X(Alarm, alarm, NanNew<Integer>)
+X(Size, size, NanNew<Integer>)
+X(Resident, resident, NanNew<Integer>)
+X(Share, share, NanNew<Integer>)
+X(Trs, trs, NanNew<Integer>)
+X(Lrs, lrs, NanNew<Integer>)
+X(Drs, drs, NanNew<Integer>)
+X(Dt, dt, NanNew<Integer>)
 
 // unsigned long
-X(VmSize, vm_size, Uint32::New)
-X(VmLock, vm_lock, Uint32::New)
-X(VmRss, vm_rss, Uint32::New)
-X(VmData, vm_data, Uint32::New)
-X(VmStack, vm_stack, Uint32::New)
-X(VmExe, vm_exe, Uint32::New)
-X(VmLib, vm_lib, Uint32::New)
+XUint32(VmSize, vm_size)
+XUint32(VmLock, vm_lock)
+XUint32(VmRss, vm_rss)
+XUint32(VmData, vm_data)
+XUint32(VmStack, vm_stack)
+XUint32(VmExe, vm_exe)
+XUint32(VmLib, vm_lib)
 
 // unsigned long
-X(Rtprio, rtprio, Uint32::New)
-X(Sched, sched, Uint32::New)
-X(Vsize, vsize, Uint32::New)
-X(RssRlim, rss_rlim, Uint32::New)
-X(Flags, flags, Uint32::New)
-X(MinFlt, min_flt, Uint32::New)
-X(MajFlt, maj_flt, Uint32::New)
-X(CminFlt, cmin_flt, Uint32::New)
-X(CmajFlt, cmaj_flt, Uint32::New)
+XUint32(Rtprio, rtprio)
+XUint32(Sched, sched)
+XUint32(Vsize, vsize)
+XUint32(RssRlim, rss_rlim)
+XUint32(Flags, flags)
+XUint32(MinFlt, min_flt)
+XUint32(MajFlt, maj_flt)
+XUint32(CminFlt, cmin_flt)
+XUint32(CmajFlt, cmaj_flt)
 
 // char*
-X(Euser, euser, String::New)
-X(Ruser, ruser, String::New)
-X(Suser, suser, String::New)
-X(Fuser, fuser, String::New)
-X(Rgroup, rgroup, String::New)
-X(Egroup, egroup, String::New)
-X(Sgroup, sgroup, String::New)
-X(Fgroup, fgroup, String::New)
-X(Cmd, cmd, String::New)
+X(Euser, euser, NanNew<String>)
+X(Ruser, ruser, NanNew<String>)
+X(Suser, suser, NanNew<String>)
+X(Fuser, fuser, NanNew<String>)
+X(Rgroup, rgroup, NanNew<String>)
+X(Egroup, egroup, NanNew<String>)
+X(Sgroup, sgroup, NanNew<String>)
+X(Fgroup, fgroup, NanNew<String>)
+X(Cmd, cmd, NanNew<String>)
 
 // *ring and *next which each point to another proc_t seem to not used, so omitted for now
 
 // int
-X(Pgrp, pgrp, Uint32::New)
-X(Session, session, Uint32::New)
-X(Nlwp, nlwp, Uint32::New)
-X(Tgid, tgid, Uint32::New)
-X(Tty, tty, Uint32::New)
+X(Pgrp, pgrp, NanNew<Int32>)
+X(Session, session, NanNew<Int32>)
+X(Nlwp, nlwp, NanNew<Int32>)
+X(Tgid, tgid, NanNew<Int32>)
+X(Tty, tty, NanNew<Int32>)
 
-X(Euid, euid, Uint32::New)
-X(Egid, egid, Uint32::New)
-X(Ruid, ruid, Uint32::New)
-X(Rgid, rgid, Uint32::New)
-X(Suid, suid, Uint32::New)
-X(Sgid, sgid, Uint32::New)
-X(Fuid, fuid, Uint32::New)
-X(Fgid, fgid, Uint32::New)
+X(Euid, euid, NanNew<Int32>)
+X(Egid, egid, NanNew<Int32>)
+X(Ruid, ruid, NanNew<Int32>)
+X(Rgid, rgid, NanNew<Int32>)
+X(Suid, suid, NanNew<Int32>)
+X(Sgid, sgid, NanNew<Int32>)
+X(Fuid, fuid, NanNew<Int32>)
+X(Fgid, fgid, NanNew<Int32>)
 
-X(Tpgid, tpgid, Uint32::New)
-X(ExitSignal, exit_signal, Uint32::New)
-X(Processor, processor, Uint32::New)
+X(Tpgid, tpgid, NanNew<Int32>)
+X(ExitSignal, exit_signal, NanNew<Int32>)
+X(Processor, processor, NanNew<Int32>)
 
 #undef X
+#undef XUint32
 
 // string arrays cmdline and environ
-#define X(Prop, prop)                                                       \
-  v8::Handle<v8::Value> Proc::Prop(                                         \
-      v8::Local<v8::String> property,                                       \
-      const v8::AccessorInfo& info) {                                       \
-    using namespace v8;                                                     \
-    HandleScope handle_scope;                                               \
-                                                                            \
-    Proc* self= Unwrap<Proc>(info);                                         \
-    proc_t *_proc = self->_proc;                                            \
-                                                                            \
-    Local<Array> arr;                                                       \
-                                                                            \
-    if (_proc->prop) {                                                      \
-      int len = 0;                                                          \
-      while (_proc->prop[len]) len++;                                       \
-                                                                            \
-      arr = Array::New(len);                                                \
-                                                                            \
-      int i = 0;                                                            \
-      for (i = 0; i < len; i++) {                                           \
-        arr->Set(i, String::New(_proc->prop[i]));                           \
-      }                                                                     \
-    } else {                                                                \
-      arr = Array::New(0);                                                  \
-    }                                                                       \
-                                                                            \
-    return handle_scope.Close(arr);                                         \
+#define X(Prop, prop)                                 \
+  NAN_GETTER(Proc::Prop) {                            \
+    NanScope();                                       \
+                                                      \
+    Proc* self= Unwrap<Proc>(args);                   \
+    proc_t *_proc = self->_proc;                      \
+                                                      \
+    Local<Array> arr;                                 \
+                                                      \
+    if (_proc->prop) {                                \
+      int len = 0;                                    \
+      while (_proc->prop[len]) len++;                 \
+                                                      \
+      arr = NanNew<Array>(len);                       \
+                                                      \
+      int i = 0;                                      \
+      for (i = 0; i < len; i++) {                     \
+        arr->Set(i, NanNew<String>(_proc->prop[i]));  \
+      }                                               \
+    } else {                                          \
+      arr = NanNew<Array>(0);                         \
+    }                                                 \
+                                                      \
+    NanReturnValue(arr);                              \
   }
 
 X(Cmdline, cmdline)
 X(Environ, environ)
 #undef X
 
-v8::Local<v8::Value> Proc::Wrap() {
-  using namespace v8;
+Local<Value> Proc::Wrap() {
 
-  HandleScope handle_scope;
+  NanScope();
   Handle<ObjectTemplate> t = ObjectTemplate::New();
   t->SetInternalFieldCount(1);
 
 #define X(Prop, prop) \
-  t->SetAccessor(String::New(#prop), Proc::Prop);
+  t->SetAccessor(NanNew<String>(#prop), Proc::Prop);
 
   X(Tid, tid)
   X(Ppid, ppid)
@@ -262,5 +281,5 @@ v8::Local<v8::Value> Proc::Wrap() {
   Local<Object> instance = t->NewInstance();
   instance->SetInternalField(0, External::New(this));
 
-  return handle_scope.Close(instance);
+  NanReturnValue(instance);
 }
