@@ -1,13 +1,18 @@
 #include <node.h>
+#include <nan.h>
 #include "procjs.h"
 #include <cassert>
 
-#define MAX_PROCS 5000
+using v8::FunctionTemplate;
+using v8::Handle;
+using v8::Local;
+using v8::Object;
+using v8::String;
+using v8::Integer;
+using v8::Value;
+using v8::Function;
 
-typedef v8::Handle<v8::Value> (*FunctionCallback)(const v8::Arguments& info);
-void AddFunction(v8::Handle<v8::Object> global, const char* name, FunctionCallback callback) {
-  global->Set(v8::String::New(name), v8::FunctionTemplate::New(callback)->GetFunction());
-}
+#define MAX_PROCS 5000
 
 /*
   * By default readproc will consider all processes as valid to parse
@@ -28,16 +33,14 @@ static proc_t **get_proctab(uint32_t flags) {
   return readproctab(flags);
 }
 
-static v8::Handle<v8::Value> Readproctab(const v8::Arguments& args) {
-  using namespace v8;
-  HandleScope handle_scope;
+NAN_METHOD(Readproctab) {
+  NanScope();
 
   // our JS API ensures we always pass flags (defaults if none were given)
   Local<Integer> flags = args[0].As<Integer>();
   assert(flags->IsUint32());
 
-  Local<Function> cb = args[1].As<Function>();
-  assert(cb->IsFunction());
+  NanCallback *cb = new NanCallback(args[1].As<Function>());
 
   proc_t **proctab = get_proctab(flags->Value());
   int len = -1;
@@ -55,13 +58,13 @@ static v8::Handle<v8::Value> Readproctab(const v8::Arguments& args) {
   // and returning v8::Array since it's so much faster
   // This technique came from node: https://github.com/joyent/node/blob/5344d0c1034b28f9e6de914430d8c8436ad85105/src/node_file.cc#L326
   // (thanks @trevnorris for explaining it to me)
-  cb->NewInstance(len, argv);
+  cb->Call(len, argv);
 
-  return v8::Undefined();
+  NanReturnUndefined();
 }
 
-void init(v8::Handle<v8::Object> exports) {
-  exports->Set(v8::String::NewSymbol("readproctab"), v8::FunctionTemplate::New(Readproctab)->GetFunction());
+void init(Handle<Object> exports) {
+  exports->Set(NanNew<String>("readproctab"), NanNew<FunctionTemplate>(Readproctab)->GetFunction());
 }
 
 NODE_MODULE(procjs, init)

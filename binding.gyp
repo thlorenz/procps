@@ -2,7 +2,7 @@
   "targets": [
     {
       "target_name": "procjs",
-      "include_dirs": ["./deps/procps/"],
+      "include_dirs": ["./deps/procps/","<!(node -e \"require('nan')\")" ],
       # VERSION numbers are picked up by procps (see procps/proc/version.c)
       "cflags": [  "-DVERSION=\"3\"", "-DSUBVERSION=\"2\"", "-DMINORVERSION=\"8\"" ],
       "sources": [

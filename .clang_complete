@@ -1,5 +1,6 @@
 -Ideps/procps/
 -I/home/vagrant/.node-gyp/0.10.28/deps/v8/include/
 -I/home/vagrant/.node-gyp/0.10.28/src/
+-I/node_modules/nan/
 -Wall
 -std=C++98

@@ -33,5 +33,8 @@
   "homepage": "https://github.com/thlorenz/procjs",
   "devDependencies": {
     "tap": "^0.4.9"
+  },
+  "dependencies": {
+    "nan": "^1.1.0"
   }
 }
