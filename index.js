@@ -2,7 +2,7 @@
 
 var procjs = require('./build/Release/procjs');
 
-var procFlags = {
+var readprocFlags = {
     PROC_FILLMEM     : 0x0001 // read statm
   , PROC_FILLCOM     : 0x0002 // alloc and fill in `cmdline'
   , PROC_FILLENV     : 0x0004 // alloc and fill in `environ'
@@ -15,24 +15,27 @@ var procFlags = {
   , PROC_LOOSE_TASKS : 0x0200 // threat threads as if they were processes
 };
 
-var defaultFlags = 0
-  | procFlags.PROC_FILLMEM
-  | procFlags.PROC_FILLCOM
-  | procFlags.PROC_FILLENV
-  | procFlags.PROC_FILLUSR
-  | procFlags.PROC_FILLGRP
-  | procFlags.PROC_FILLSTATUS
-  | procFlags.PROC_FILLSTAT
-  | procFlags.PROC_FILLWCHAN
-  | procFlags.PROC_FILLARG
-  | procFlags.PROC_LOOSE_TASKS
+var readprocFlagsFillAll = 0
+  | readprocFlags.PROC_FILLMEM
+  | readprocFlags.PROC_FILLCOM
+  | readprocFlags.PROC_FILLENV
+  | readprocFlags.PROC_FILLUSR
+  | readprocFlags.PROC_FILLGRP
+  | readprocFlags.PROC_FILLSTATUS
+  | readprocFlags.PROC_FILLSTAT
+  | readprocFlags.PROC_FILLWCHAN
+  | readprocFlags.PROC_FILLARG
+  | readprocFlags.PROC_LOOSE_TASKS
   ;
 
-exports.readproctab = function getProcs(flags) {
+exports.readproctab = function (flags_) {
   var args;
+  var flags = typeof flags_ === 'undefined' ? readprocFlagsFillAll : flags_;
+
   // passing result as args array instead of v8::Array return value
   // the callback is invoked synchronously
-  procjs.readproctab(flags || defaultFlags, function () { args = Array.prototype.slice.call(arguments); });
+  procjs.readproctab(flags, function () { args = Array.prototype.slice.call(arguments); });
   return args;
 }
-exports.readproctabFlags = procFlags;
+exports.readprocFlags = readprocFlags;
+exports.readprocFlagsFillAll = readprocFlagsFillAll;
