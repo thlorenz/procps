@@ -8,11 +8,13 @@
   },
   "scripts": {
     "test": "tap test/*.js",
+    "test-0.8": "nave use 0.8 npm run build && npm run test",
+    "test-0.11": "nave use 0.11 npm run build && npm run test",
     "install": "node-gyp rebuild",
     "clean": "rm -rf ./build && cd ./deps/procps && make clean",
     "build": "CC=gcc CXX=gcc node-gyp rebuild",
     "start": "npm run build",
-    "restart": "npm run clean && npm run start"
+    "restart": "npm run clean && npm run build"
   },
   "repository": {
     "type": "git",
@@ -32,9 +34,10 @@
   },
   "homepage": "https://github.com/thlorenz/procjs",
   "devDependencies": {
-    "tap": "^0.4.9"
+    "nave": "^0.4.5",
+    "tap": "~0.4.9"
   },
   "dependencies": {
-    "nan": "^1.1.0"
+    "nan": "~1.1.0"
   }
 }
