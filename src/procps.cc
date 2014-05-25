@@ -1,6 +1,6 @@
 #include <node.h>
 #include <nan.h>
-#include "procjs.h"
+#include "procps.h"
 #include <cassert>
 
 using v8::FunctionTemplate;
@@ -67,4 +67,4 @@ void init(Handle<Object> exports) {
   exports->Set(NanNew<String>("readproctab"), NanNew<FunctionTemplate>(Readproctab)->GetFunction());
 }
 
-NODE_MODULE(procjs, init)
+NODE_MODULE(procps, init)

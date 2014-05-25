@@ -4,9 +4,9 @@ function inspect(obj, depth) {
   console.error(require('util').inspect(obj, false, depth || 5, true));
 }
 
-var procjs = require('../');
+var procps = require('../');
 
-var proctab = procjs.readproctab();
+var proctab = procps.readproctab();
 var bycmd = proctab.reduce(function (acc, p) {
   acc[p.cmd] = p;
   return acc;

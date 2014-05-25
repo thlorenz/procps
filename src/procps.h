@@ -1,5 +1,5 @@
-#ifndef __PROCJS_H__
-#define __PROCJS_H__
+#ifndef __NODE_PROCPS_H__
+#define __NODE_PROCPS_H__
 
 #include "v8.h"
 #include <nan.h>

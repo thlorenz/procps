@@ -1,5 +1,5 @@
 #include <nan.h>
-#include "procjs.h"
+#include "procps.h"
 
 using v8::Handle;
 using v8::External;

@@ -1,9 +1,9 @@
 'use strict';
 
 var test = require('tap').test
-var procjs = require('../')
-var readproctab = procjs.readproctab;
-var readprocFlags = procjs.readprocFlags;
+var procps = require('../')
+var readproctab = procps.readproctab;
+var readprocFlags = procps.readprocFlags;
 
 function bycmd(proctab) {
   return proctab.reduce(function (acc, p) {
@@ -57,7 +57,7 @@ test('\nwhen reading proctab with default flags', function (t) {
 })
 
 test('\nwhen reading with flags that exclude FILLENV and FILLUSR', function (t) {
-  var flags = procjs.readprocFlagsFillAll 
+  var flags = procps.readprocFlagsFillAll 
     ^ readprocFlags.PROC_FILLENV 
     ^ readprocFlags.PROC_FILLUSR;
 

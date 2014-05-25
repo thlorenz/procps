@@ -1,5 +1,5 @@
 {
-  "name": "procjs",
+  "name": "procps",
   "version": "0.0.0",
   "description": "procps bindings",
   "main": "index.js",
@@ -18,21 +18,22 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/thlorenz/procjs"
+    "url": "git://github.com/thlorenz/procps"
   },
   "keywords": [
     "procps",
     "binding",
     "memory",
-    "top"
+    "top",
+    "proc"
   ],
   "author": "Thorsten Lorenz <thlorenz@gmx.de>",
   "license": "MIT",
   "gypfile": true,
   "bugs": {
-    "url": "https://github.com/thlorenz/procjs/issues"
+    "url": "https://github.com/thlorenz/procps/issues"
   },
-  "homepage": "https://github.com/thlorenz/procjs",
+  "homepage": "https://github.com/thlorenz/procps",
   "devDependencies": {
     "nave": "^0.4.5",
     "tap": "~0.4.9"

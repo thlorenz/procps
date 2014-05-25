@@ -1,6 +1,6 @@
 'use strict';
 
-var procjs = require('./build/Release/procjs');
+var procps = require('./build/Release/procps');
 
 var readprocFlags = {
     PROC_FILLMEM     : 0x0001 // read statm
@@ -34,7 +34,7 @@ exports.readproctab = function (flags_) {
 
   // passing result as args array instead of v8::Array return value
   // the callback is invoked synchronously
-  procjs.readproctab(flags, function () { args = Array.prototype.slice.call(arguments); });
+  procps.readproctab(flags, function () { args = Array.prototype.slice.call(arguments); });
   return args;
 }
 exports.readprocFlags = readprocFlags;
