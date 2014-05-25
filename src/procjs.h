@@ -33,6 +33,10 @@ public:
   Proc(Isolate* isolate, proc_t *proc)
     : _isolate(isolate), _proc(proc) {}
 
+  ~Proc() {
+    freeproc(_proc);
+  }
+
 #define X(Prop) \
   static _NAN_GETTER_RETURN_TYPE Prop(Local<String> property, _NAN_GETTER_ARGS_TYPE);
 
