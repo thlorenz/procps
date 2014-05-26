@@ -1,13 +1,13 @@
 /*
- * Copyright 1998-2002 by Albert Cahalan; all rights resered.         
+ * Copyright 1998-2002 by Albert Cahalan; all rights resered.
  * This file may be used subject to the terms and conditions of the
- * GNU Library General Public License Version 2, or any later version  
+ * GNU Library General Public License Version 2, or any later version
  * at your option, as published by the Free Software Foundation.
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Library General Public License for more details.
- */                                 
+ */
 #include <stdio.h>
 #include <sys/types.h>
 #include <string.h>
@@ -23,31 +23,35 @@
 # include <langinfo.h>
 #endif
 
+#ifndef wcwidth
+extern int (*wcwidth)(wchar_t);
+#endif
+
 #if (__GNU_LIBRARY__ >= 6)
 static int escape_str_utf8(char *restrict dst, const char *restrict src, int bufsize, int *maxcells){
   int my_cells = 0;
   int my_bytes = 0;
   mbstate_t s;
-  
+
   memset(&s, 0, sizeof (s));
-  
+
   for(;;) {
     wchar_t wc;
     int len = 0;
-	  
-    if(my_cells >= *maxcells || my_bytes+1 >= bufsize) 
+
+    if(my_cells >= *maxcells || my_bytes+1 >= bufsize)
       break;
-    
+
     if (!(len = mbrtowc (&wc, src, MB_CUR_MAX, &s)))
       /* 'str' contains \0 */
       break;
-    
+
     if (len < 0) {
       /* invalid multibyte sequence -- zeroize state */
       memset (&s, 0, sizeof (s));
       *(dst++) = '?';
       src++;
-      my_cells++; 
+      my_cells++;
       my_bytes++;
 
     } else if (len==1) {
@@ -56,20 +60,20 @@ static int escape_str_utf8(char *restrict dst, const char *restrict src, int buf
       src++;
       my_cells++;
       my_bytes++;
-      
+
     } else if (!iswprint(wc)) {
       /* multibyte - no printable */
       *(dst++) = '?';
       src+=len;
       my_cells++;
-      my_bytes++; 
-    
+      my_bytes++;
+
     } else {
-      /* multibyte - printable */	
+      /* multibyte - printable */
       int wlen = wcwidth(wc);
 
       if (wlen==0) {
-	// invisible multibyte -- we don't ignore it, because some terminal 
+	// invisible multibyte -- we don't ignore it, because some terminal
 	// interpret it wrong and more safe is replace it with '?'
 	*(dst++) = '?';
 	src+=len;
@@ -101,7 +105,7 @@ static int escape_str_utf8(char *restrict dst, const char *restrict src, int buf
   *(dst++) = '\0';
 
   // fprintf(stderr, "maxcells: %d, my_cells; %d\n", *maxcells, my_cells);
-  
+
   *maxcells -= my_cells;
   return my_bytes;        // bytes of text, excluding the NUL
 }
@@ -122,10 +126,10 @@ int escape_str(char *restrict dst, const char *restrict src, int bufsize, int *m
   "********************************"
   "********************************"
   "********************************";
-  
+
 #if (__GNU_LIBRARY__ >= 6)
   static int utf_init=0;
-  
+
   if(utf_init==0){
      /* first call -- check if UTF stuff is usable */
      char *enc = nl_langinfo(CODESET);
@@ -135,11 +139,11 @@ int escape_str(char *restrict dst, const char *restrict src, int bufsize, int *m
      /* UTF8 locales */
      return escape_str_utf8(dst, src, bufsize, maxcells);
 #endif
-		  
+
   if(bufsize > *maxcells+1) bufsize=*maxcells+1; // FIXME: assumes 8-bit locale
 
   for(;;){
-    if(my_cells >= *maxcells || my_bytes+1 >= bufsize) 
+    if(my_cells >= *maxcells || my_bytes+1 >= bufsize)
       break;
     c = (unsigned char) *(src++);
     if(!c) break;
@@ -149,7 +153,7 @@ int escape_str(char *restrict dst, const char *restrict src, int bufsize, int *m
     *(dst++) = c;
   }
   *(dst++) = '\0';
-  
+
   *maxcells -= my_cells;
   return my_bytes;        // bytes of text, excluding the NUL
 }
