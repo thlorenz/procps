@@ -182,7 +182,8 @@ X(Environ, environ)
 
 Local<Value> Proc::Wrap() {
 
-  NanScope();
+  NanEscapableScope();
+
   Handle<ObjectTemplate> t = ObjectTemplate::New();
   t->SetInternalFieldCount(1);
 
@@ -279,7 +280,11 @@ Local<Value> Proc::Wrap() {
 #undef X
 
   Local<Object> instance = t->NewInstance();
+#if (NODE_MODULE_VERSION > 0x000B) /* node 0.11 */
+  instance->SetInternalField(0, External::New(v8::Isolate::GetCurrent(), this));
+#else
   instance->SetInternalField(0, External::New(this));
+#endif
 
-  NanReturnValue(instance);
+  return NanEscapeScope(instance);
 }

@@ -6,8 +6,6 @@ Node.js bindings for [procps](http://procps.sourceforge.net/), a library that pr
 
 Unixes with a `/proc` directory only. Tested on `arch linux` and `ubuntu`.
 
-At this point Node.js versions `0.8, 0.10` are supported, support for `0.11` is in the works.
-
 ## Installation
 
     npm install procps
