@@ -26,3 +26,6 @@ main
 .depend
 build
 node_modules
+
+deps/dox-procps.proc/
+deps/dox-procps/

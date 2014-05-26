@@ -14,7 +14,9 @@
     "test-all": "npm run test-0.8 && npm run test-0.10 && npm run test-0.11",
     "install": "node-gyp rebuild",
     "clean": "rm -rf ./build && cd ./deps/procps && make clean",
-    "restart": "npm run clean && npm run install"
+    "restart": "npm run clean && npm run install",
+    "dox": "doxygen ./deps/procps.doxygen",
+    "dox-proc": "doxygen ./deps/procps.proc.doxygen"
   },
   "repository": {
     "type": "git",
