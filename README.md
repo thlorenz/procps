@@ -83,6 +83,8 @@ console.log(bycommand.node)
 
 ## API
 
+So far `readproctab` has been implemented, but lots more to come, i.e. `meminfo`.
+
 <!-- START docme generated API please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN docme TO UPDATE -->
 
@@ -96,7 +98,7 @@ console.log(bycommand.node)
 </div>
 <dl>
 <dt>
-<h4 class="name" id="readprocFlags"><span class="type-signature"></span>readprocFlags<span class="type-signature"></span></h4>
+<h4 class="name" id="readproctab::flags"><span class="type-signature"></span>readproctab::flags<span class="type-signature"></span></h4>
 </dt>
 <dd>
 <div class="description">
@@ -115,13 +117,13 @@ Use these in order to fill/loose specific process properties.</p>
 </dl>
 </dd>
 <dt>
-<h4 class="name" id="readprocFlagsFillAll"><span class="type-signature"></span>readprocFlagsFillAll<span class="type-signature"></span></h4>
+<h4 class="name" id="readproctab::flagsFillAll"><span class="type-signature"></span>readproctab::flagsFillAll<span class="type-signature"></span></h4>
 </dt>
 <dd>
 <div class="description">
 <p>The flags used by default which cause readproc to fill all properties of each process.
 Use them as a starting point to turn properties off selectively, i.e.:</p>
-<pre><code class="lang-js">var flags = procps.readprocFlagsFillAll ^ readprocFlags.PROC_FILLENV ^ readprocFlags.PROC_FILLUSR;</code></pre>
+<pre><code class="lang-js">var flags = readproctab.flagsFillAll ^ readproctab.flags.PROC_FILLENV ^ readproctab.flags.PROC_FILLUSR;</code></pre>
 </div>
 <dl class="details">
 <dt class="tag-source">Source:</dt>

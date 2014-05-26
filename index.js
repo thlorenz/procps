@@ -39,7 +39,7 @@ var readprocFlagsFillAll = 0
  * @param {number=} flags_ flags passed to readproc, allow filling specific process properties only instead of all of them which is the default
  * @return {Array.<Object>} information about all processes running on the system
  */
-exports.readproctab = function (flags_) {
+var readproctab = exports.readproctab = function (flags_) {
   var args;
   var flags = typeof flags_ === 'undefined' ? readprocFlagsFillAll : flags_;
 
@@ -53,18 +53,18 @@ exports.readproctab = function (flags_) {
  * A hashtable of all readproc flags.
  * Use these in order to fill/loose specific process properties.
  * 
- * @name readprocFlags
+ * @name readproctab::flags
  */
-exports.readprocFlags = readprocFlags;
+readproctab.flags = readprocFlags;
 
 /**
  * The flags used by default which cause readproc to fill all properties of each process.
  * Use them as a starting point to turn properties off selectively, i.e.:
  *
  * ```js
- * var flags = procps.readprocFlagsFillAll ^ readprocFlags.PROC_FILLENV ^ readprocFlags.PROC_FILLUSR;
+ * var flags = readproctab.flagsFillAll ^ readproctab.flags.PROC_FILLENV ^ readproctab.flags.PROC_FILLUSR;
  * ```
  * 
- * @name readprocFlagsFillAll
+ * @name readproctab::flagsFillAll
  */
-exports.readprocFlagsFillAll = readprocFlagsFillAll;
+readproctab.flagsFillAll = readprocFlagsFillAll;
