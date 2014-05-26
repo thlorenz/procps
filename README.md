@@ -83,6 +83,8 @@ console.log(bycommand.node)
 
 ## API
 
+*Unofficial* [procps documentation](http://fossies.org/dox/procps-3.2.8/).
+
 So far `readproctab` has been implemented, but lots more to come, i.e. `meminfo`.
 
 <!-- START docme generated API please keep comment here to allow auto update -->
@@ -203,6 +205,16 @@ Type
 *generated with [docme](https://github.com/thlorenz/docme)*
 </div>
 <!-- END docme generated API please keep comment here to allow auto update -->
+
+## Caveats
+
+Lots of procps forks to exist, some may be better maintained, namely [this one Denian, Fedora and openSUSE
+fork](https://gitorious.org/procps).
+
+I chose the version based on simplicity, size and ease of itegration, i.e. having to use `autoconf` is a deal breaker.
+
+However if you run into bugs and know of more up to date versions that fix them, I'd be interested to hear about it and
+even open to switching the underlying C lib used if enough benefits arise from that.
 
 ## LICENSE
 
