@@ -32,7 +32,7 @@ sysctl.8
 sysctl.c
 sysctl.conf
 sysctl.conf.5
-t*
+t
 tload.1
 tload.c
 TODO
@@ -41,7 +41,7 @@ top.c
 top.h
 uptime.1
 uptime.c
-v*
+v
 vmstat.8
 vmstat.c
 w.1
