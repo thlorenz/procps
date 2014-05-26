@@ -1,20 +1,20 @@
 {
   "name": "procps",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "procps bindings",
   "main": "index.js",
   "directories": {
     "example": "example"
   },
-  "scripts"     : {
-    "test"      : "tap test/*.js",
-    "test-0.8"  : "nave use 0.8 npm run install && nave use 0.8 npm run test",
-    "test-0.10" : "nave use 0.10 npm run install && nave use 0.10 npm run test",
-    "test-0.11" : "nave use 0.11 npm run install && nave use 0.11 npm run test",
-    "test-all"  : "npm run test-0.8 && npm run test-0.10 && npm run test-0.11",
-    "install"   : "node-gyp rebuild",
-    "clean"     : "rm -rf ./build && cd ./deps/procps && make clean",
-    "restart"   : "npm run clean && npm run install"
+  "scripts": {
+    "test": "tap test/*.js",
+    "test-0.8": "nave use 0.8 npm run install && nave use 0.8 npm run test",
+    "test-0.10": "nave use 0.10 npm run install && nave use 0.10 npm run test",
+    "test-0.11": "nave use 0.11 npm run install && nave use 0.11 npm run test",
+    "test-all": "npm run test-0.8 && npm run test-0.10 && npm run test-0.11",
+    "install": "node-gyp rebuild",
+    "clean": "rm -rf ./build && cd ./deps/procps && make clean",
+    "restart": "npm run clean && npm run install"
   },
   "repository": {
     "type": "git",
