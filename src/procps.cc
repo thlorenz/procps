@@ -1,6 +1,9 @@
 #include <node.h>
 #include <nan.h>
+
 #include "procps.h"
+#include "proc/sysinfo.h"
+
 #include <cassert>
 
 using v8::FunctionTemplate;
@@ -9,6 +12,7 @@ using v8::Local;
 using v8::Object;
 using v8::String;
 using v8::Integer;
+using v8::Uint32;
 using v8::Value;
 using v8::Function;
 
@@ -63,8 +67,59 @@ NAN_METHOD(Readproctab) {
   NanReturnUndefined();
 }
 
+NAN_METHOD(Meminfo) {
+  NanScope();
+
+  NanCallback *cb = new NanCallback(args[0].As<Function>());
+
+  meminfo();
+
+  #define X(field) NanNew<Uint32>((uint32_t) (field))
+
+  Local<Value> argv[] = {
+    /* all are unsigned long */
+      X(kb_main_buffers)
+    , X(kb_main_cached)
+    , X(kb_main_free)
+    , X(kb_main_total)
+    , X(kb_swap_free)
+    , X(kb_swap_total)
+    /* recently introduced */
+    , X(kb_high_free)
+    , X(kb_high_total)
+    , X(kb_low_free)
+    , X(kb_low_total)
+    /* 2.4.xx era */
+    , X(kb_active)
+    , X(kb_inact_laundry)
+    , X(kb_inact_dirty)
+    , X(kb_inact_clean)
+    , X(kb_inact_target)
+    , X(kb_swap_cached)  /* late 2.4 and 2.6+ only */
+    /* derived values */
+    , X(kb_swap_used)
+    , X(kb_main_used)
+    /* 2.5.41+ */
+    , X(kb_writeback)
+    , X(kb_slab)
+    , X(nr_reversemaps)
+    , X(kb_committed_as)
+    , X(kb_dirty)
+    , X(kb_inactive)
+    , X(kb_mapped)
+    , X(kb_pagetables)
+  };
+  #undef X
+
+  cb->Call(sizeof(argv) / sizeof(argv[0]), argv);
+
+  NanReturnUndefined();
+}
+
+
 void init(Handle<Object> exports) {
   exports->Set(NanNew<String>("readproctab"), NanNew<FunctionTemplate>(Readproctab)->GetFunction());
+  exports->Set(NanNew<String>("meminfo"), NanNew<FunctionTemplate>(Meminfo)->GetFunction());
 }
 
 NODE_MODULE(procps, init)

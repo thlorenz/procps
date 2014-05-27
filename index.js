@@ -33,7 +33,7 @@ var readprocFlagsFillAll = 0
  *
  * - underscore_names are camel cased
  * - Int64 values are converted to Int32 values
- * 
+ *
  * @name readproctab
  * @function
  * @param {number=} flags_ flags passed to readproc, allow filling specific process properties only instead of all of them which is the default
@@ -52,7 +52,7 @@ var readproctab = exports.readproctab = function (flags_) {
 /**
  * A hashtable of all readproc flags.
  * Use these in order to fill/loose specific process properties.
- * 
+ *
  * @name readproctab::flags
  */
 readproctab.flags = readprocFlags;
@@ -64,7 +64,46 @@ readproctab.flags = readprocFlags;
  * ```js
  * var flags = readproctab.flagsFillAll ^ readproctab.flags.PROC_FILLENV ^ readproctab.flags.PROC_FILLUSR;
  * ```
- * 
+ *
  * @name readproctab::flagsFillAll
  */
 readproctab.flagsFillAll = readprocFlagsFillAll;
+
+exports.meminfo = function meminfo () {
+
+  var args;
+  procps.meminfo(function () { args = arguments; });
+
+  return [
+    'kb_main_buffers'
+  , 'kb_main_cached'
+  , 'kb_main_free'
+  , 'kb_main_total'
+  , 'kb_swap_free'
+  , 'kb_swap_total'
+  , 'kb_high_free'
+  , 'kb_high_total'
+  , 'kb_low_free'
+  , 'kb_low_total'
+  , 'kb_active'
+  , 'kb_inact_laundry'
+  , 'kb_inact_dirty'
+  , 'kb_inact_clean'
+  , 'kb_inact_target'
+  , 'kb_swap_cached'
+  , 'kb_swap_used'
+  , 'kb_main_used'
+  , 'kb_writeback'
+  , 'kb_slab'
+  , 'nr_reversemaps'
+  , 'kb_committed_as'
+  , 'kb_dirty'
+  , 'kb_inactive'
+  , 'kb_mapped'
+  , 'kb_pagetables'
+  ].reduce(function (acc, k, idx) {
+      acc[k.slice(3)] = args[idx];
+      return acc;
+    }, {})
+}
+
