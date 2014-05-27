@@ -25,7 +25,7 @@
       # VERSION numbers are picked up by procps (see procps/proc/version.c)
         'cflags!'    : [ '-fno-exceptions', '-fno-tree-vrp' ],
         'cflags_cc!' : [ '-fno-exceptions' ],
-        "cflags": [  "-DVERSION=\"3\"", "-DSUBVERSION=\"2\"", "-DMINORVERSION=\"8\"" ],
+        "cflags": [  "-DVERSION=\"3\"", "-DSUBVERSION=\"2\"", "-DMINORVERSION=\"8\"", "-Wno-string-plus-int", "-Wno-format-security" ],
         'cflags_cc'  : [ '-fexceptions', '-frtti' ]
     }
   ]

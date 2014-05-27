@@ -25,13 +25,12 @@ template <typename T, typename CallbackInfo> T* Unwrap(const CallbackInfo& args)
 }
 
 class Proc {
-  Isolate *_isolate;
   proc_t *_proc;
 
 public:
 
   Proc(Isolate* isolate, proc_t *proc)
-    : _isolate(isolate), _proc(proc) {}
+    : _proc(proc) {}
 
   ~Proc() {
     freeproc(_proc);
