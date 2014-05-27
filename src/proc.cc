@@ -280,11 +280,7 @@ Local<Value> Proc::Wrap() {
 #undef X
 
   Local<Object> instance = t->NewInstance();
-#if (NODE_MODULE_VERSION > 0x000B) /* node 0.11 */
-  instance->SetInternalField(0, External::New(v8::Isolate::GetCurrent(), this));
-#else
-  instance->SetInternalField(0, External::New(this));
-#endif
+  instance->SetInternalField(0, NanNew<External>(this));
 
   return NanEscapeScope(instance);
 }
