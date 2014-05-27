@@ -70,11 +70,15 @@ NAN_METHOD(Readproctab) {
 NAN_METHOD(Meminfo) {
   NanScope();
 
-  NanCallback *cb = new NanCallback(args[0].As<Function>());
+  Local<Integer> shiftArg = args[0].As<Integer>();
+  assert(shiftArg->IsUint32());
+  unsigned long long shift = shiftArg->Value();
+
+  NanCallback *cb = new NanCallback(args[1].As<Function>());
 
   meminfo();
 
-  #define X(field) NanNew<Uint32>((uint32_t) (field))
+  #define X(field) NanNew<Uint32>((uint32_t) ((unsigned long long)(field) << 10) >> shift)
 
   Local<Value> argv[] = {
     /* all are unsigned long */

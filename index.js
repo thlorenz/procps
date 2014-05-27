@@ -69,10 +69,17 @@ readproctab.flags = readprocFlags;
  */
 readproctab.flagsFillAll = readprocFlagsFillAll;
 
-exports.meminfo = function meminfo () {
 
+var shifts = {
+  'b': 0, 'k': 10, 'm': 20, 'g': 30
+};
+
+// -b,-k,-m,-g show output in bytes, KB, MB, or GB
+exports.meminfo = function meminfo (unit) {
+
+  var shift = unit ? shifts[unit.toLowerCase()] || 0 : 0;
   var args;
-  procps.meminfo(function () { args = arguments; });
+  procps.meminfo(shift, function () { args = arguments; });
 
   return [
     'kb_main_buffers'

@@ -6,3 +6,7 @@ function inspect(obj, depth) {
 
 var meminfo = require('../').meminfo;
 inspect(meminfo());
+
+var inmb = meminfo('m');
+Object.keys(inmb).forEach(function (k) { inmb[k] += ' MB' });
+inspect(inmb);
