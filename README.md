@@ -32,19 +32,13 @@ console.log(bycommand.node)
   startCode: 4194304,
   rgroup: 'kermit',
   egid: 1000,
-  ...
   pgrp: 13690,
   minFlt: 3199,
   startTime: 3344937,
   suser: 'kermit',
   fgid: 1000,
   processor: 0,
-  nice: 0,
   startStack: 76310960,
-  fuid: 1000,
-  vmStack: 140,
-  euser: 'kermit',
-  size: 0,
   sgroup: 'kermit',
   cmajFlt: 0,
   flags: 4202496,
@@ -54,26 +48,15 @@ console.log(bycommand.node)
   environ:
    [ 'LC_PAPER=en_US.UTF-8',
      ...
-     'npm_package_scripts_build=CC=gcc CXX=gcc node-gyp rebuild',
-     'npm_package_scripts_start=npm run build',
-     'npm_package_keywords_2=memory',
      'npm_node_execpath=/usr/bin/node' ],
   nlwp: 2,
   kstkEsp: 76309144,
-  alarm: 0,
   fuser: 'kermit',
   cmdline: [ 'node', 'example/readproctab.js' ],
   sigcatch: '0000000180014202',
-  blocked: '0000000000000000',
   utime: 2,
   vmRss: 9724,
-  vmLock: 0,
   wchan: 4294967295,
-  dt: 0,
-  priority: 20,
-  stime: 1,
-  suid: 1000,
-  rgid: 1000,
   euid: 1000,
   sigignore: '0000000000001000',
   share: 0 }
@@ -138,6 +121,59 @@ Use them as a starting point to turn properties off selectively, i.e.:</p>
 </dd>
 </dl>
 <dl>
+<dt>
+<h4 class="name" id="meminfo"><span class="type-signature"></span>meminfo<span class="signature">(<span class="optional">unit</span>)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+</dt>
+<dd>
+<div class="description">
+<p>A hybrid of <code>procps.meminfo</code> and <code>free</code>.</p>
+</div>
+<h5>Parameters:</h5>
+<table class="params">
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Argument</th>
+<th class="last">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="name"><code>unit</code></td>
+<td class="type">
+<span class="param-type">string</span>
+</td>
+<td class="attributes">
+&lt;optional><br>
+</td>
+<td class="description last"><p><code>'b'|'k'|'m'|'g'</code> to return usage in Bytes|KB|MB|GB respectively</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="details">
+<dt class="tag-source">Source:</dt>
+<dd class="tag-source"><ul class="dummy">
+<li>
+<a href="https://github.com/thlorenz/procps/blob/master/index.js">index.js</a>
+<span>, </span>
+<a href="https://github.com/thlorenz/procps/blob/master/index.js#L77">lineno 77</a>
+</li>
+</ul></dd>
+</dl>
+<h5>Returns:</h5>
+<div class="param-desc">
+<p>with properties indicating memory usage, like <code>mainTotal</code></p>
+</div>
+<dl>
+<dt>
+Type
+</dt>
+<dd>
+<span class="param-type">Object</span>
+</dd>
+</dl>
+</dd>
 <dt>
 <h4 class="name" id="readproctab"><span class="type-signature"></span>readproctab<span class="signature">(<span class="optional">flags_</span>)</span><span class="type-signature"> &rarr; {Array.&lt;Object>}</span></h4>
 </dt>

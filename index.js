@@ -74,7 +74,14 @@ var shifts = {
   'b': 0, 'k': 10, 'm': 20, 'g': 30
 };
 
-// -b,-k,-m,-g show output in bytes, KB, MB, or GB
+/**
+ * A hybrid of `procps.meminfo` and `free`.
+ * 
+ * @name meminfo
+ * @function
+ * @param {string=} unit `'b'|'k'|'m'|'g'` to return usage in Bytes|KB|MB|GB respectively
+ * @return {Object} with properties indicating memory usage, like `mainTotal`
+ */
 exports.meminfo = function meminfo (unit) {
 
   var shift = unit ? shifts[unit.toLowerCase()] || 0 : 0;
