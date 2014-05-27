@@ -34,12 +34,13 @@ test('\ncalling meminfo without a unit', function (t) {
   ;
 
   // not too sure about these, they are all 0 on my machine
-  [ 'swapCached', 'swapUsed', 'writeback', 'reversemaps', 'dirty'
+  [ 'swapCached', 'swapUsed', 'writeback', 'reversemaps', 'dirty',
+    'committedAs', 'mapped', 'pagetables'
   ].forEach(function (k) { 
       t.ok(isFinite(info[k]), 'includes ' + k)
     });
 
-  [ 'slab', 'committedAs', 'inactive', 'mapped', 'pagetables'
+  [ 'slab', 'inactive'
   ].forEach(function (k) { 
       t.ok(0 < info[k], 'includes non zero ' + k)
     });
