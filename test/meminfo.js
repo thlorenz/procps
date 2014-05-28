@@ -51,15 +51,17 @@ test('\ncalling meminfo without a unit', function (t) {
 test('\ncalling meminfo with unit k', function (t) {
   var info = meminfo();
   var infok = meminfo('k');  
-  t.equal(infok.mainTotal, Math.floor(info.mainTotal / Math.pow(2, 10)), 'main total is returned in kb')
-  t.equal(infok.mainFree, Math.floor(info.mainFree / Math.pow(2, 10)), 'main free is returned in kb')
+  var expectedTotal = Math.floor(info.mainTotal / Math.pow(2, 10));
+  var diffTotal = Math.abs(expectedTotal - infok.mainTotal) / infok.mainTotal;
+  t.ok(diffTotal < 0.00001 , 'main total is returned in kb')
   t.end()
 })
 
 test('\ncalling meminfo with unit m', function (t) {
   var info = meminfo();
   var infom = meminfo('m');  
-  t.equal(infom.mainTotal, Math.floor(info.mainTotal / Math.pow(2, 20)), 'main total is returned in mb')
-  t.equal(infom.mainFree, Math.floor(info.mainFree / Math.pow(2, 20)), 'main free is returned in mb')
+  var expectedTotal = Math.floor(info.mainTotal / Math.pow(2, 20));
+  var diffTotal = Math.abs(expectedTotal - infom.mainTotal) / infom.mainTotal;
+  t.ok(diffTotal < 0.00001 , 'main total is returned in mb')
   t.end()
 })
