@@ -16,6 +16,10 @@ using v8::Uint32;
 using v8::Value;
 using v8::Function;
 
+/*
+ * readproc
+ */
+
 #define MAX_PROCS 5000
 
 /*
@@ -67,7 +71,11 @@ NAN_METHOD(Readproctab) {
   NanReturnUndefined();
 }
 
-NAN_METHOD(Meminfo) {
+/*
+ * sysinfo
+ */
+
+NAN_METHOD(Sysinfo_Meminfo) {
   NanScope();
 
   Local<Integer> shiftArg = args[0].As<Integer>();
@@ -123,7 +131,7 @@ NAN_METHOD(Meminfo) {
 
 void init(Handle<Object> exports) {
   exports->Set(NanNew<String>("readproctab"), NanNew<FunctionTemplate>(Readproctab)->GetFunction());
-  exports->Set(NanNew<String>("meminfo"), NanNew<FunctionTemplate>(Meminfo)->GetFunction());
+  exports->Set(NanNew<String>("sysinfo_meminfo"), NanNew<FunctionTemplate>(Sysinfo_Meminfo)->GetFunction());
 }
 
 NODE_MODULE(procps, init)

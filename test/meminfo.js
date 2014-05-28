@@ -2,7 +2,7 @@
 
 var test = require('tap').test
 var os = require('os')
-var meminfo = require('../').meminfo
+var meminfo = require('../').sysinfo.meminfo
 
 function inspect(obj, depth) {
   console.error(require('util').inspect(obj, false, depth || 5, true));

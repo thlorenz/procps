@@ -2,6 +2,10 @@
 
 var procps = require('./build/Release/procps');
 
+/*
+ * readproc
+ */
+
 var readprocFlags = {
     PROC_FILLMEM     : 0x0001 // read statm
   , PROC_FILLCOM     : 0x0002 // alloc and fill in `cmdline'
@@ -69,24 +73,28 @@ readproctab.flags = readprocFlags;
  */
 readproctab.flagsFillAll = readprocFlagsFillAll;
 
+/*
+ * sysinfo
+ */
 
 var shifts = {
   'b': 0, 'k': 10, 'm': 20, 'g': 30
 };
 
+var sysinfo = exports.sysinfo = {};
 /**
  * A hybrid of `procps.meminfo` and `free`.
  * 
- * @name meminfo
+ * @name sysinfo::meminfo
  * @function
  * @param {string=} unit `'b'|'k'|'m'|'g'` to return usage in Bytes|KB|MB|GB respectively
  * @return {Object} with properties indicating memory usage, like `mainTotal`
  */
-exports.meminfo = function meminfo (unit) {
+sysinfo.meminfo = function meminfo (unit) {
 
   var shift = unit ? shifts[unit.toLowerCase()] || 0 : 0;
   var args;
-  procps.meminfo(shift, function () { args = arguments; });
+  procps.sysinfo_meminfo(shift, function () { args = arguments; });
 
   return [
     'mainBuffers'
