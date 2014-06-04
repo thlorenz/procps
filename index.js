@@ -129,3 +129,74 @@ sysinfo.meminfo = function meminfo (unit) {
     }, {})
 }
 
+function inspect(obj, depth) {
+  console.error(require('util').inspect(obj, true, depth || 5, true));
+}
+
+sysinfo.Hertz = procps.sysinfo_Hertz();
+
+sysinfo.getstat = function getstat() {
+  var args;
+  procps.sysinfo_getstat(function () { args = arguments; });
+
+  var acc = {}
+    , idx;
+
+  var pairs = [
+    'cpuUse'
+  , 'cpuNic'
+  , 'cpuSys'
+  , 'cpuIdl'
+  , 'cpuIow'
+  , 'cpuXxx'
+  , 'cpuYyy'
+  , 'cpuZzz'
+  , 'pgpgin'
+  , 'pgpgout'
+  , 'pswpin'
+  , 'pswpout'
+  , 'intr'
+  , 'ctxt'
+  ];
+
+  pairs.reduce(function (acc, k, idx) {
+    acc[k] = [ args[idx * 2], args[idx * 2 + 1] ];
+    return acc; 
+  }, acc)
+
+  idx = pairs.length * 2;
+
+  acc.running   = args[idx++];
+  acc.blocked   = args[idx++];
+  acc.btime     = args[idx++];
+  acc.processes = args[idx++];
+
+  return acc;
+}
+
+sysinfo.getdiskstat = function getdiskstat() {
+  var ret = procps.sysinfo_getdiskstat();
+  console.log('result:');
+  inspect(ret);
+}
+sysinfo.getdiskstat();
+
+exports.vmstat = function () {
+  // new format
+}
+
+exports.vmsumstat = function () {
+  // sum_format
+}
+
+exports.diskstat = function () {
+ // diskformat
+}
+
+exports.slabstat = function () {
+  // slabformat
+}
+
+exports.disksumstat = function () {
+  // disksum_format
+}

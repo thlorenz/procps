@@ -4,6 +4,7 @@
 #include "v8.h"
 #include <nan.h>
 #include "proc/readproc.h"
+#include "proc/sysinfo.h"
 
 using v8::Handle;
 using v8::Value;
@@ -14,6 +15,7 @@ using v8::String;
 using v8::Object;
 
 using v8::Isolate;
+using v8::Uint32;
 
 template <typename T, typename CallbackInfo> T* Unwrap(const CallbackInfo& args) {
   NanScope();
@@ -29,7 +31,7 @@ class Proc {
 
 public:
 
-  Proc(Isolate* isolate, proc_t *proc)
+  Proc(proc_t *proc)
     : _proc(proc) {}
 
   ~Proc() {
@@ -135,4 +137,32 @@ public:
   Local<Value> Wrap();
 };
 
+
+class DiskStat {
+  disk_stat _stat;
+
+public:
+  DiskStat(disk_stat stat) : _stat(stat) {}
+
+#define X(Prop) \
+  static _NAN_GETTER_RETURN_TYPE Prop(Local<String> property, _NAN_GETTER_ARGS_TYPE);
+
+  X(readsSectors)
+  X(writtenSectors)
+
+  X(inprogressIO)
+  X(mergedReads)
+  X(mergedWrites)
+  X(milliReading)
+  X(milliSpentIO)
+  X(milliWriting)
+  X(partitions)
+  X(reads)
+  X(weightedMilliSpentIO)
+  X(writes)
+  X(diskName)
+#undef X
+
+  Local<Value> Wrap();
+};
 #endif

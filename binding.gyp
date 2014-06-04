@@ -5,6 +5,7 @@
       'sources': [
           'src/procps.cc'
         , 'src/proc.cc'
+        , 'src/diskstat.cc'
         , 'deps/procps/proc/alloc.c'
         , 'deps/procps/proc/devname.c'
         , 'deps/procps/proc/escape.c'

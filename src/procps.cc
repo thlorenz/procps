@@ -13,6 +13,7 @@ using v8::Object;
 using v8::String;
 using v8::Integer;
 using v8::Uint32;
+using v8::Array;
 using v8::Value;
 using v8::Function;
 
@@ -58,7 +59,7 @@ NAN_METHOD(Readproctab) {
 
   Local<Value> argv[MAX_PROCS];
   for (int i = 0; i < len; i++) {
-    Proc *proc = new Proc(args.GetIsolate(), proctab[i]);
+    Proc *proc = new Proc(proctab[i]);
     argv[i] = proc->Wrap();
   }
 
@@ -74,6 +75,8 @@ NAN_METHOD(Readproctab) {
 /*
  * sysinfo
  */
+
+#define MAX_DISKS 1000
 
 NAN_METHOD(Sysinfo_Meminfo) {
   NanScope();
@@ -128,10 +131,97 @@ NAN_METHOD(Sysinfo_Meminfo) {
   NanReturnUndefined();
 }
 
+NAN_METHOD(Sysinfo_Hertz) {
+  NanScope();
+
+  /* Herz is globally defined in sysinfo.c */
+  NanReturnValue(NanNew<Uint32>((uint32_t) Hertz));
+}
+
+NAN_METHOD(Sysinfo_Getstat) {
+  jiff cpu_use[2], cpu_nic[2], cpu_sys[2], cpu_idl[2], cpu_iow[2], cpu_xxx[2], cpu_yyy[2], cpu_zzz[2];
+  unsigned long pgpgin[2], pgpgout[2], pswpin[2], pswpout[2];
+  unsigned int intr[2], ctxt[2];
+  unsigned int running, blocked, btime, processes;
+
+  NanScope();
+
+  NanCallback *cb = new NanCallback(args[0].As<Function>());
+
+  getstat(cpu_use, cpu_nic, cpu_sys,cpu_idl, cpu_iow, cpu_xxx, cpu_yyy, cpu_zzz,
+	  pgpgin, pgpgout, pswpin, pswpout,
+	  intr, ctxt,
+	  &running, &blocked,
+	  &btime, &processes);
+
+  #define X(field) NanNew<Uint32>((uint32_t) field)
+  Local<Value> argv[] = {
+      X(cpu_use[0])
+    , X(cpu_use[1])
+    , X(cpu_nic[0])
+    , X(cpu_nic[1])
+    , X(cpu_sys[0])
+    , X(cpu_sys[1])
+    , X(cpu_idl[0])
+    , X(cpu_idl[1])
+    , X(cpu_iow[0])
+    , X(cpu_iow[1])
+    , X(cpu_xxx[0])
+    , X(cpu_xxx[1])
+    , X(cpu_yyy[0])
+    , X(cpu_yyy[1])
+    , X(cpu_zzz[0])
+    , X(cpu_zzz[1])
+    , X(pgpgin[0])
+    , X(pgpgin[1])
+    , X(pgpgout[0])
+    , X(pgpgout[1])
+    , X(pswpin[0])
+    , X(pswpin[1])
+    , X(pswpout[0])
+    , X(pswpout[1])
+    , X(intr[0])
+    , X(intr[1])
+    , X(ctxt[0])
+    , X(ctxt[1])
+    , X(running)
+    , X(blocked)
+    , X(btime)
+    , X(processes)
+  };
+  #undef X
+
+  cb->Call(sizeof(argv) / sizeof(argv[0]), argv);
+
+  NanReturnUndefined();
+}
+
+NAN_METHOD(Sysinfo_GetDiskStat) {
+  struct disk_stat *disks;
+  struct partition_stat *partitions;
+  int ndisks;
+
+  NanEscapableScope();
+
+  ndisks = getdiskstat(&disks, &partitions);
+
+  assert(ndisks <= MAX_DISKS && "exceeded MAX_DISKS");
+  Local<Array> wrapDisks = NanNew<Array>(ndisks);
+
+  for (int i = 0; i < ndisks; i++) {
+    DiskStat *stat = new DiskStat(disks[i]);
+    wrapDisks->Set(i, stat->Wrap());
+  }
+
+  NanReturnValue(wrapDisks);
+}
 
 void init(Handle<Object> exports) {
   exports->Set(NanNew<String>("readproctab"), NanNew<FunctionTemplate>(Readproctab)->GetFunction());
   exports->Set(NanNew<String>("sysinfo_meminfo"), NanNew<FunctionTemplate>(Sysinfo_Meminfo)->GetFunction());
+  exports->Set(NanNew<String>("sysinfo_Hertz"), NanNew<FunctionTemplate>(Sysinfo_Hertz)->GetFunction());
+  exports->Set(NanNew<String>("sysinfo_getstat"), NanNew<FunctionTemplate>(Sysinfo_Getstat)->GetFunction());
+  exports->Set(NanNew<String>("sysinfo_getdiskstat"), NanNew<FunctionTemplate>(Sysinfo_GetDiskStat)->GetFunction());
 }
 
 NODE_MODULE(procps, init)
