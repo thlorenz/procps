@@ -187,25 +187,4 @@ public:
   Local<Value> Wrap();
 };
 
-class GetDiskStat {
-  disk_stat *_disks;
-  partition_stat *_partitions;
-  int _ndisks;
-
-public:
-  GetDiskStat() {
-    _ndisks = getdiskstat(&_disks, &_partitions);
-  }
-
-#define X(Prop) \
-  static _NAN_GETTER_RETURN_TYPE Prop(Local<String> property, _NAN_GETTER_ARGS_TYPE);
-
-  X(Disks)
-  X(Partitions)
-#undef X
-
-  Local<Value> Wrap();
-};
-
-
 #endif

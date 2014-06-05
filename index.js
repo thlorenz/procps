@@ -130,7 +130,7 @@ sysinfo.meminfo = function meminfo (unit) {
 }
 
 function inspect(obj, depth) {
-  console.error(require('util').inspect(obj, true, depth || 5, true));
+  console.error(require('util').inspect(obj, false, depth || 5, true));
 }
 
 sysinfo.Hertz = procps.sysinfo_Hertz();
@@ -175,11 +175,11 @@ sysinfo.getstat = function getstat() {
 }
 
 sysinfo.getdiskstat = function getdiskstat() {
-  var ret = procps.sysinfo_getdiskstat();
-  console.log('result:');
-  inspect(ret);
+  var args;
+  procps.sysinfo_getdiskstat(function () { args = arguments; });
+
+  return { disks: args[0], partitions: args[1] };
 }
-sysinfo.getdiskstat();
 
 exports.vmstat = function () {
   // new format

@@ -7,7 +7,6 @@
         , 'src/proc.cc'
         , 'src/diskstat.cc'
         , 'src/partitionstat.cc'
-        , 'src/getdiskstat.cc'
         , 'deps/procps/proc/alloc.c'
         , 'deps/procps/proc/devname.c'
         , 'deps/procps/proc/escape.c'

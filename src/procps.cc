@@ -195,10 +195,35 @@ NAN_METHOD(Sysinfo_Getstat) {
 }
 
 NAN_METHOD(Sysinfo_GetDiskStat) {
-  NanEscapableScope();
+  NanScope();
+  NanCallback *cb = new NanCallback(args[0].As<Function>());
 
-  GetDiskStat *stats = new GetDiskStat();
-  NanReturnValue(stats->Wrap());
+  disk_stat *disks;
+  partition_stat *partitions;
+  int ndisks = getdiskstat(&disks, &partitions);
+
+  // disks
+  Local<Array> wrapDisks = NanNew<Array>(ndisks);
+
+  for (int i = 0; i < ndisks; i++) {
+    DiskStat *stat = new DiskStat(disks[i]);
+    wrapDisks->Set(i, stat->Wrap());
+  }
+
+  // partitions
+  int npartitions = sizeof(partitions) / sizeof(partition_stat);
+  Local<Array> wrapPartitions = NanNew<Array>(npartitions);
+
+  for (int i = 0; i < npartitions; i++) {
+    PartitionStat *stat = new PartitionStat(partitions[i]);
+    wrapPartitions->Set(i, stat->Wrap());
+  }
+
+  Local<Value> argv[] = { wrapDisks, wrapPartitions };
+
+  cb->Call(sizeof(argv) / sizeof(argv[0]), argv);
+
+  NanReturnUndefined();
 }
 
 void init(Handle<Object> exports) {
