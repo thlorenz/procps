@@ -76,8 +76,6 @@ NAN_METHOD(Readproctab) {
  * sysinfo
  */
 
-#define MAX_DISKS 1000
-
 NAN_METHOD(Sysinfo_Meminfo) {
   NanScope();
 
@@ -197,23 +195,10 @@ NAN_METHOD(Sysinfo_Getstat) {
 }
 
 NAN_METHOD(Sysinfo_GetDiskStat) {
-  struct disk_stat *disks;
-  struct partition_stat *partitions;
-  int ndisks;
-
   NanEscapableScope();
 
-  ndisks = getdiskstat(&disks, &partitions);
-
-  assert(ndisks <= MAX_DISKS && "exceeded MAX_DISKS");
-  Local<Array> wrapDisks = NanNew<Array>(ndisks);
-
-  for (int i = 0; i < ndisks; i++) {
-    DiskStat *stat = new DiskStat(disks[i]);
-    wrapDisks->Set(i, stat->Wrap());
-  }
-
-  NanReturnValue(wrapDisks);
+  GetDiskStat *stats = new GetDiskStat();
+  NanReturnValue(stats->Wrap());
 }
 
 void init(Handle<Object> exports) {

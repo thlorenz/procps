@@ -15,7 +15,7 @@ using v8::String;
 using v8::Object;
 
 using v8::Isolate;
-using v8::Uint32;
+using v8::Array;
 
 template <typename T, typename CallbackInfo> T* Unwrap(const CallbackInfo& args) {
   NanScope();
@@ -165,4 +165,47 @@ public:
 
   Local<Value> Wrap();
 };
+
+class PartitionStat {
+  partition_stat _stat;
+
+public:
+  PartitionStat(partition_stat stat) : _stat(stat) {}
+
+#define X(Prop) \
+  static _NAN_GETTER_RETURN_TYPE Prop(Local<String> property, _NAN_GETTER_ARGS_TYPE);
+
+  X(readsSectors)
+
+  X(parentDisk)            // index into a struct disk_stat array
+  X(reads)
+  X(writes)
+  X(requestedWrites)
+  X(partitionName)
+#undef X
+
+  Local<Value> Wrap();
+};
+
+class GetDiskStat {
+  disk_stat *_disks;
+  partition_stat *_partitions;
+  int _ndisks;
+
+public:
+  GetDiskStat() {
+    _ndisks = getdiskstat(&_disks, &_partitions);
+  }
+
+#define X(Prop) \
+  static _NAN_GETTER_RETURN_TYPE Prop(Local<String> property, _NAN_GETTER_ARGS_TYPE);
+
+  X(Disks)
+  X(Partitions)
+#undef X
+
+  Local<Value> Wrap();
+};
+
+
 #endif

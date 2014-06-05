@@ -4,16 +4,15 @@
 using v8::ObjectTemplate;
 using v8::Uint32;
 
-#define X(prop, Prop)                                                 \
-  NAN_GETTER(DiskStat::Prop) {                                  \
-    NanScope();                                                 \
-                                                                \
-    DiskStat* self = Unwrap<DiskStat>(args);                    \
-    NanReturnValue(NanNew<Uint32>((uint32_t) self->_stat.prop));   \
+#define X(prop, Prop)                                            \
+  NAN_GETTER(DiskStat::Prop) {                                   \
+    NanScope();                                                  \
+                                                                 \
+    DiskStat* self = Unwrap<DiskStat>(args);                     \
+    NanReturnValue(NanNew<Uint32>((uint32_t) self->_stat.prop)); \
   }
 
 // unsigned long long
-
 X(reads_sectors, readsSectors)
 X(written_sectors, writtenSectors)
 
@@ -67,7 +66,6 @@ Local<Value> DiskStat::Wrap() {
 
   Local<Object> instance = t->NewInstance();
   instance->SetInternalField(0, NanNew<External>(this));
-
 
   return NanEscapeScope(instance);
 }
