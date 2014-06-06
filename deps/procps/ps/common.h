@@ -1,7 +1,7 @@
 /*
- * Copyright 1998-2002 by Albert Cahalan; all rights resered.         
+ * Copyright 1998-2002 by Albert Cahalan; all rights resered.
  * This file may be used subject to the terms and conditions of the
- * GNU Library General Public License Version 2, or any later version  
+ * GNU Library General Public License Version 2, or any later version
  * at your option, as published by the Free Software Foundation.
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -12,19 +12,19 @@
 #ifndef PROCPS_PS_H
 #define PROCPS_PS_H
 
+#include "../include/nls.h"
 #include "../proc/procps.h"
 #include "../proc/escape.h"
 #include "../proc/readproc.h"
 
 #if 0
-#define trace(args...) printf(## args)
+#define trace(...) printf(## __VA_ARGS__)
 #else
-#define trace(args...)
+#define trace(...)
 #endif
 
 
 /***************** GENERAL DEFINE ********************/
-
 
 /* selection list */
 #define SEL_RUID 1
@@ -301,7 +301,7 @@ extern int             prefer_bsd_defaults;
 extern int             running_only;
 extern int             screen_cols;
 extern int             screen_rows;
-extern unsigned long   seconds_since_boot;
+extern time_t          seconds_since_boot;
 extern selection_node *selection_list;
 extern unsigned        simple_select;
 extern sort_node      *sort_list;
@@ -313,8 +313,12 @@ extern unsigned        thread_flags;
 extern int             unix_f_option;
 extern int             user_is_number;
 extern int             wchan_is_number;
+extern const char     *the_word_help;
 
 /************************* PS GLOBALS *********************/
+
+/* display.c */
+extern char *myname;
 
 /* sortformat.c */
 extern int defer_sf_option(const char *arg, int source);
@@ -326,10 +330,12 @@ extern int want_this_proc(proc_t *buf);
 extern const char *select_bits_setup(void);
 
 /* help.c */
-extern const char *help_message;
+extern void do_help(const char *opt, int rc) NORETURN;
 
 /* global.c */
 extern void self_info(void);
+extern void catastrophic_failure(const char *filename, unsigned int linenum,
+				 const char *message);
 
 /* parser.c */
 extern int arg_parse(int argc, char *argv[]);

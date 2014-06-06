@@ -7,8 +7,8 @@
 EXTERN_C_BEGIN
 
 extern unsigned long long Hertz;   /* clock tick frequency */
-extern long smp_num_cpus;     /* number of CPUs */
-extern int have_privs;     /* boolean, true if setuid or similar */
+extern long smp_num_cpus;          /* number of CPUs */
+extern int have_privs;             /* boolean, true if setuid or similar */
 
 #if 0
 #define JT double
@@ -17,10 +17,10 @@ extern void eight_cpu_numbers(JT *uret, JT *nret, JT *sret, JT *iret, JT *wret, 
 #endif
 
 extern int        uptime (double *uptime_secs, double *idle_secs);
+extern unsigned long getbtime(void);
 extern void       loadavg(double *av1, double *av5, double *av15);
 
-
-/* obsolete */
+/* Shmem in 2.6.32+ */
 extern unsigned long kb_main_shared;
 /* old but still kicking -- the important stuff */
 extern unsigned long kb_main_buffers;
@@ -56,11 +56,11 @@ extern unsigned long kb_pagetables;
 
 #define BUFFSIZE (64*1024)
 typedef unsigned long long jiff;
-extern void getstat(jiff *restrict cuse, jiff *restrict cice, jiff *restrict csys, jiff *restrict cide, jiff *restrict ciow, jiff *restrict cxxx, jiff *restrict cyyy, jiff *restrict czzz,
-	     unsigned long *restrict pin, unsigned long *restrict pout, unsigned long *restrict s_in, unsigned long *restrict sout,
-	     unsigned *restrict intr, unsigned *restrict ctxt,
-	     unsigned int *restrict running, unsigned int *restrict blocked,
-	     unsigned int *restrict btime, unsigned int *restrict processes);
+extern void getstat(jiff *__restrict cuse, jiff *__restrict cice, jiff *__restrict csys, jiff *__restrict cide, jiff *__restrict ciow, jiff *__restrict cxxx, jiff *__restrict cyyy, jiff *__restrict czzz,
+	     unsigned long *__restrict pin, unsigned long *__restrict pout, unsigned long *__restrict s_in, unsigned long *__restrict sout,
+	     unsigned *__restrict intr, unsigned *__restrict ctxt,
+	     unsigned int *__restrict running, unsigned int *__restrict blocked,
+	     unsigned int *__restrict btime, unsigned int *__restrict processes);
 
 extern void meminfo(void);
 
@@ -113,7 +113,7 @@ typedef struct partition_stat{
 	unsigned           parent_disk;  // index into a struct disk_stat array
 	unsigned           reads;
 	unsigned           writes;
-	unsigned           requested_writes;
+	unsigned long long requested_writes;
 }partition_stat;
 
 extern unsigned int getpartitions_num(struct disk_stat *disks, int ndisks);
@@ -130,6 +130,8 @@ typedef struct slab_cache{
 extern unsigned int getslabinfo (struct slab_cache**);
 
 extern unsigned get_pid_digits(void) FUNCTION;
+
+extern void cpuinfo (void);
 
 EXTERN_C_END
 #endif /* SYSINFO_H */

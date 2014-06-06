@@ -33,7 +33,7 @@
 //
 #if defined(k64test) || (defined(_ABIN32) && _MIPS_SIM == _ABIN32)
 #define KLONG long long    // not typedef; want "unsigned KLONG" to work
-#define KLF "L"
+#define KLF "ll"
 #define STRTOUKL strtoull
 #else
 #define KLONG long
@@ -44,15 +44,6 @@
 // since gcc-2.5
 #define NORETURN __attribute__((__noreturn__))
 #define FUNCTION __attribute__((__const__))  // no access to global mem, even via ptr, and no side effect
-
-#if !defined(restrict) && __STDC_VERSION__ < 199901
-#if __GNUC__ > 2 || __GNUC_MINOR__ >= 92
-#define restrict __restrict__
-#else
-#warning No restrict keyword?
-#define restrict
-#endif
-#endif
 
 #if __GNUC__ > 2 || __GNUC_MINOR__ >= 96
 // won't alias anything, and aligned enough for anything
@@ -71,14 +62,16 @@
 #define expected(x,y)   (x)
 #endif
 
-#if SHARED==1 && (__GNUC__ > 2 || __GNUC_MINOR__ >= 96)
-#define LABEL_OFFSET
+#ifdef SHARED
+# if SHARED==1 && (__GNUC__ > 2 || __GNUC_MINOR__ >= 96)
+#  define LABEL_OFFSET
+# endif
 #endif
 
 #define STRINGIFY_ARG(a)	#a
 #define STRINGIFY(a)		STRINGIFY_ARG(a)
 
-// marks old junk, to warn non-procps library users
+// marks old junk, to warn non-procps-ng library users
 #if ( __GNUC__ == 3 && __GNUC_MINOR__ > 0 ) || __GNUC__ > 3
 #define OBSOLETE __attribute__((deprecated))
 #else
@@ -108,5 +101,8 @@
 #else
 #define HIDDEN_ALIAS(x) extern __typeof(x) x##_direct __attribute__((alias(#x)))
 #endif
+
+
+typedef void (*message_fn)(const char *__restrict, ...) __attribute__((format(printf,1,2)));
 
 #endif

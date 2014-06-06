@@ -3,9 +3,9 @@
 
 #include "procps.h"
 
-/* Suite version information for procps utilities
+/* Suite version information for procps-ng utilities
  * Copyright (c) 1995 Martin Schulze <joey@infodrom.north.de>
- * Linux kernel version information for procps utilities
+ * Linux kernel version information for procps-ng utilities
  * Copyright (c) 1996 Charles Blake <cblake@bbn.com>
  * Distributable under the terms of the GNU Library General Public License
  *
@@ -14,6 +14,7 @@
 
 EXTERN_C_BEGIN
 
+void init_Linux_version(void);    /* Get Linux version */
 extern void display_version(void);	/* display suite version */
 extern const char procps_version[];		/* global buf for suite version */
 

@@ -6,118 +6,116 @@
 .\" Written by Albert Cahalan, converted to a man page by
 .\" Michael K. Johnson
 .\"
-.TH SKILL 1 "March 12, 1999" "Linux" "Linux User's Manual"
+.TH SKILL 1 "October 2011" "procps-ng" "User Commands"
 .SH NAME
 skill, snice \- send a signal or report process status
-
 .SH SYNOPSIS
-.nf
-skill [signal to send] [options] process selection criteria
-snice [new priority] [options] process selection criteria
-.fi
-
+.B skill
+.RI [ signal ]
+.RI [ options ]
+.I expression
+.br
+.B snice
+.RI [ "new priority" ]
+.RI [ options ]
+.I expression
 .SH DESCRIPTION
-These tools are probably obsolete and unportable. The command
-syntax is poorly defined. Consider using the killall, pkill,
-and pgrep commands instead.
-
-The default signal for skill is TERM. Use -l or -L to list available signals.
-Particularly useful signals include HUP, INT, KILL, STOP, CONT, and 0.
-Alternate signals may be specified in three ways: -9 -SIGKILL -KILL.
-
-The default priority for snice is +4. (snice +4 ...)
-Priority numbers range from +20 (slowest) to -20 (fastest).
-Negative priority numbers are restricted to administrative users.
-
-.SH "GENERAL OPTIONS"
-.TS
-l l l.
--f	fast mode	This is not currently useful.
--i	interactive use	T{
-You will be asked to approve each action.
-T}
--v	verbose output	T{
-Display information about selected processes.
-T}
--w	warnings enabled	This is not currently useful.
--n	no action	This only displays the process ID.
--V	show version	Displays version of program.
-.TE
-
+These tools are obsolete and unportable.  The command syntax is
+poorly defined.  Consider using the killall, pkill, and pgrep
+commands instead.
+.PP
+The default signal for skill is TERM.  Use \-l or \-L to list
+available signals.  Particularly useful signals include HUP, INT,
+KILL, STOP, CONT, and 0.  Alternate signals may be specified in three
+ways: \-9 \-SIGKILL \-KILL.
+.PP
+The default priority for snice is +4.  Priority numbers range from
++20 (slowest) to \-20 (fastest).  Negative priority numbers are
+restricted to administrative users.
+.SH OPTIONS
+.TP
+.BR \-f , \ \-\-fast
+Fast mode.  This option has not been implemented.
+.TP
+.BR \-i , \ \-\-interactive
+Interactive use.  You will be asked to approve each action.
+.TP
+.BR \-l , \ \-\-list
+List all signal names.
+.TP
+.BR \-L , \ \-\-table
+List all signal names in a nice table.
+.TP
+.BR \-n , \ \-\-no\-action
+No action; perform a simulation of events that would occur but do not
+actually change the system.
+.TP
+.BR \-v , \ \-\-verbose
+Verbose; explain what is being done.
+.TP
+.BR \-w , \ \-\-warnings
+Enable warnings.  This option has not been implemented.
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Display help text and exit.
+.TP
+\fB\-V\fR, \fB\-\-version\fR
+Display version information.
+.PD
 .SH "PROCESS SELECTION OPTIONS"
-Selection criteria can be: terminal, user, pid, command.
-The options below may be used to ensure correct interpretation.
-Do not blame Albert for this interesting interface.
-.TS
-l l.
--t	The next argument is a terminal (tty or pty).
--u	The next argument is a username.
--p	The next argument is a process ID number.
--c	The next argument is a command name.
-.TE
-
+Selection criteria can be: terminal, user, pid, command.  The options
+below may be used to ensure correct interpretation.
+.TP
+\fB\-t\fR, \fB\-\-tty\fR \fItty\fR
+The next expression is a terminal (tty or pty).
+.TP
+\fB\-u\fR, \fB\-\-user\fR \fIuser\fR
+The next expression is a username.
+.TP
+\fB\-p\fR, \fB\-\-pid\fR \fIpid\fR
+The next expression is a process ID number.
+.TP
+\fB\-c\fR, \fB\-\-command\fR \fIcommand\fR
+The next expression is a command name.
+.TP
+\fB\-\-ns \fIpid\fR
+Match the processes that belong to the same namespace as pid.
+.TP
+\fB\-\-nslist \fIns,...\fR
+list which namespaces will be considered for the --ns option.
+Available namespaces: ipc, mnt, net, pid, user, uts.
+.PD
 .SH SIGNALS
-The signals listed below may be available for use with skill.
-When known, numbers and default behavior are shown.
-.TS
-lB rB lB lB
-lfCW r l l.
-Name	Num	Action	Description
-.TH
-0	0	n/a	exit code indicates if a signal may be sent
-ALRM	14	exit
-HUP	1	exit
-INT	2	exit
-KILL	9	exit	this signal may not be blocked
-PIPE	13	exit
-POLL		exit
-PROF		exit
-TERM	15	exit
-USR1		exit
-USR2		exit
-VTALRM		exit
-STKFLT		exit	may not be implemented
-PWR		ignore	may exit on some systems
-WINCH		ignore
-CHLD		ignore
-URG		ignore
-TSTP		stop	may interact with the shell
-TTIN		stop	may interact with the shell
-TTOU		stop	may interact with the shell
-STOP		stop	this signal may not be blocked
-CONT		restart	continue if stopped, otherwise ignore
-ABRT	6	core
-FPE	8	core
-ILL	4	core
-QUIT	3	core
-SEGV	11	core
-TRAP	5	core
-SYS		core	may not be implemented
-EMT		core	may not be implemented
-BUS		core	core dump may fail
-XCPU		core	core dump may fail
-XFSZ		core	core dump may fail
-.TE
-
+The behavior of signals is explained in
+.BR signal (7)
+manual page.
 .SH EXAMPLES
-.TS
-lB lB
-lfCW l.
-Command	Description
-.TC
-snice seti crack +7	Slow down seti and crack
-skill -KILL -v /dev/pts/*	Kill users on new-style PTY devices
-skill -STOP viro lm davem	Stop 3 users
-snice -17 root bash	Give priority to root's shell
-.TE
-
+.TP
+.B snice -c seti -c crack +7
+Slow down seti and crack commands.
+.TP
+.B skill \-KILL \-t /dev/pts/*
+Kill users on PTY devices.
+.TP
+.B skill \-STOP \-u viro \-u lm \-u davem
+Stop three users.
 .SH "SEE ALSO"
-killall(1) pkill(1) kill(1) renice(1) nice(1) signal(7) kill(2)
-
+.BR kill (1),
+.BR kill (2),
+.BR killall (1),
+.BR nice (1),
+.BR pkill (1),
+.BR renice (1),
+.BR signal (7)
 .SH STANDARDS
 No standards apply.
-
 .SH AUTHOR
-Albert Cahalan <albert@users.sf.net> wrote skill and snice in 1999 as a
-replacement for a non-free version, and is the current maintainer of the
-procps collection. Please send bug reports to <procps-feedback@lists.sf.net>.
+.UR albert@users.sf.net
+Albert Cahalan
+.UE
+wrote skill and snice in 1999 as a replacement for a non-free
+version.
+.SH "REPORTING BUGS"
+Please send bug reports to
+.UR procps@freelists.org
+.UE

@@ -1,12 +1,20 @@
 /*
- * Copyright 1998-2002 by Albert Cahalan; all rights resered.
- * This file may be used subject to the terms and conditions of the
- * GNU Library General Public License Version 2, or any later version
- * at your option, as published by the Free Software Foundation.
- * This program is distributed in the hope that it will be useful,
+ * devname - device name functions
+ * Copyright 1998-2002 by Albert Cahalan
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Library General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 #include <stdio.h>
@@ -18,6 +26,7 @@
 #include <unistd.h>
 #include "version.h"
 #include "devname.h"
+#include "alloc.h"
 
 // This is the buffer size for a tty name. Any path is legal,
 // which makes PAGE_SIZE appropriate (see kernel source), but
@@ -69,13 +78,13 @@ static void load_drivers(void){
   p = buf;
   while(( p = strstr(p, " /dev/") )){  // " /dev/" is the second column
     tty_map_node *tmn;
-    unsigned int len;
+    size_t len;
     char *end;
     p += 6;
     end = strchr(p, ' ');
     if(!end) continue;
     len = end - p;
-    tmn = (tty_map_node*) calloc(1, sizeof(tty_map_node));
+    tmn = xcalloc(sizeof(tty_map_node));
     tmn->next = tty_map;
     tty_map = tmn;
     /* if we have a devfs type name such as /dev/tts/%d then strip the %d but
@@ -134,7 +143,7 @@ static int driver_name(char *restrict const buf, unsigned maj, unsigned min){
 }
 
 // major 204 is a mess -- "Low-density serial ports"
-static const char low_density_names[][7] = {
+static const char low_density_names[][6] = {
 "LU0",  "LU1",  "LU2",  "LU3",
 "FB0",
 "SA0",  "SA1",  "SA2",
@@ -281,9 +290,6 @@ unsigned dev_to_tty(char *restrict ret, unsigned chop, dev_t dev_t_dev, int pid,
   unsigned i = 0;
   int c;
   if(dev == 0u) goto no_tty;
-  if(linux_version_code > LINUX_VERSION(2, 7, 0)){  // not likely to make 2.6.xx
-    if(link_name(tmp, MAJOR_OF(dev), MINOR_OF(dev), pid, "tty"   )) goto abbrev;
-  }
   if(driver_name(tmp, MAJOR_OF(dev), MINOR_OF(dev)               )) goto abbrev;
   if(  link_name(tmp, MAJOR_OF(dev), MINOR_OF(dev), pid, "fd/2"  )) goto abbrev;
   if( guess_name(tmp, MAJOR_OF(dev), MINOR_OF(dev)               )) goto abbrev;

@@ -1,33 +1,42 @@
 /*
- * Copyright 1998-2002 by Albert Cahalan; all rights resered.         
- * This file may be used subject to the terms and conditions of the
- * GNU Library General Public License Version 2, or any later version  
- * at your option, as published by the Free Software Foundation.
- * This program is distributed in the hope that it will be useful,
+ * global.c - generic ps symbols and functions
+ * Copyright 1998-2002 by Albert Cahalan
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Library General Public License for more details.
- */                                 
-#include <stdlib.h>
-#include <termios.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/ioctl.h>
-#include <sys/types.h>
-#include <pwd.h>
-#include <grp.h>
-#include <string.h>
-#include <sys/stat.h>
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+
 #include <fcntl.h>
-                     
+#include <grp.h>
+#include <pwd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <termios.h>
+#include <unistd.h>
+#include <error.h>
 
-#include "common.h"
-
+#include <sys/ioctl.h>
+#include <sys/stat.h>
 #include <sys/sysmacros.h>
+#include <sys/types.h>
+
 #include "../proc/wchan.h"
 #include "../proc/version.h"
 #include "../proc/sysinfo.h"
 
+#include "common.h"
 
 #ifndef __GNU_LIBRARY__
 #define __GNU_LIBRARY__ -1
@@ -69,7 +78,7 @@ unsigned        personality = 0xffffffff;
 int             prefer_bsd_defaults = -1;
 int             screen_cols = -1;
 int             screen_rows = -1;
-unsigned long   seconds_since_boot = -1;
+time_t          seconds_since_boot = -1;
 selection_node *selection_list = (selection_node *)0xdeadbeef;
 unsigned        simple_select = 0xffffffff;
 sort_node      *sort_list = (sort_node *)0xdeadbeef; /* ready-to-use sort list */
@@ -81,7 +90,7 @@ unsigned        thread_flags = 0xffffffff;
 int             unix_f_option = -1;
 int             user_is_number = -1;
 int             wchan_is_number = -1;
-
+const char     *the_word_help;
 
 static void reset_selection_list(void){
   selection_node *old;
@@ -158,7 +167,7 @@ static void set_screen_size(void){
   }
 
   if((screen_cols<9) || (screen_rows<2))
-    fprintf(stderr,"Your %dx%d screen size is bogus. Expect trouble.\n",
+    fprintf(stderr,_("your %dx%d screen size is bogus. expect trouble\n"),
       screen_cols, screen_rows
     );
 }
@@ -231,16 +240,19 @@ static const char *set_personality(void){
   if(!s || !*s) s="unknown";   /* "Do The Right Thing[tm]" */
   if(getenv("I_WANT_A_BROKEN_PS")) s="old";
   sl = strlen(s);
-  if(sl > 15) return "Environment specified an unknown personality.";
+  if(sl > 15) return _("environment specified an unknown personality");
   strncpy(buf, s, sl);
   buf[sl] = '\0';
-  saved_personality_text = strdup(buf);
+  if ((saved_personality_text = strdup(buf))==NULL) {
+    fprintf(stderr, _("cannot strdup() personality text\n"));
+    exit(EXIT_FAILURE);
+  }
 
   found = bsearch(&findme, personality_table, personality_table_count,
       sizeof(personality_table_struct), compare_personality_table_structs
   );
 
-  if(!found) return "Environment specified an unknown personality.";
+  if(!found) return _("environment specified an unknown personality");
 
   goto *(found->jump);    /* See gcc extension info.  :-)   */
 
@@ -361,7 +373,7 @@ void reset_global(void){
   look_up_our_self(&p);
   set_screen_size();
   set_personality();
-  
+
   all_processes         = 0;
   bsd_c_option          = 0;
   bsd_e_option          = 0;
@@ -388,6 +400,14 @@ void reset_global(void){
   unix_f_option         = 0;
   user_is_number        = 0;
   wchan_is_number       = 0;
+/* Translation Note:
+   . The following translatable word will be used to recognize the
+   . user's request for help text.  In other words, the translation
+   . you provide will alter program behavior.
+   .
+   . It must be limited to 15 characters or less.
+   */
+  the_word_help         = _("help");
 }
 
 static const char archdefs[] =
@@ -480,7 +500,7 @@ void self_info(void){
 
   fprintf(stderr,
     "personality=0x%08x (from \"%s\")\n"
-    "EUID=%d TTY=%d,%d Hertz=%Ld page_size=%d\n",
+    "EUID=%d TTY=%d,%d Hertz=%lld page_size=%d\n",
     personality, saved_personality_text,
     cached_euid, (int)major(cached_tty), (int)minor(cached_tty), Hertz,
     (int)(page_size)
@@ -495,4 +515,13 @@ void self_info(void){
 
   open_psdb(namelist_file);
   fprintf(stderr,"namelist_file=\"%s\"\n",namelist_file?namelist_file:"<no System.map file>");
+}
+
+void __attribute__ ((__noreturn__))
+catastrophic_failure(const char *filename,
+		     unsigned int linenum,
+		     const char *message)
+{
+  error_at_line(0, 0, filename, linenum, "%s", message);
+  exit(EXIT_FAILURE);
 }

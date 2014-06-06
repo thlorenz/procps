@@ -1,124 +1,104 @@
-.\" slabtop.1 - manpage for the slabtop(1) utility, part of procps
+.\" slabtop.1 - manpage for the slabtop(1) utility, part of procps-ng
 .\"
 .\" Copyright (C) 2003 Chris Rivera
 .\" Licensed under the terms of the GNU Library General Public License, v2
-.TH SLABTOP 1 "13 Sep 2003" "Linux" "Linux User's Manual"
+.TH SLABTOP "1" "June 2011" "procps-ng" "User Commands"
 .SH NAME
 slabtop \- display kernel slab cache information in real time
-
 .SH SYNOPSIS
-.BI "slabtop [ " options " ] "
-
+.B slabtop
+[\fIoptions\fR]
 .SH DESCRIPTION
-.BR slabtop (1)
+.B slabtop
 displays detailed kernel slab cache information in real time.  It displays a
 listing of the top caches sorted by one of the listed sort criteria.  It also
 displays a statistics header filled with slab layer information.
-
 .SH OPTIONS
-Normal invocation of 
-.BR slabtop (1)
+Normal invocation of
+.B slabtop
 does not require any options.  The behavior, however, can be fine-tuned by
 specifying one or more of the following flags:
 .TP
-.B \-\^\-delay=n, \-d n
-Refresh the display every n seconds.  By default,
-.BR slabtop (1)
+\fB\-d\fR, \fB\-\-delay\fR=\fIN\fR
+Refresh the display every
+.I n
+in seconds.  By default,
+.B slabtop
 refreshes the display every three seconds.  To exit the program, hit
 .BR q.
 .TP
-.B \-\^\-sort=S, \-s S
-Sort by S, where S is one of the sort criteria.
+\fB\-s\fR, \fB\-\-sort\fR=\fIS\fR
+Sort by \fIS\fR, where \fIS\fR is one of the sort criteria.
 .TP
-.B \-\^\-once, \-o
+\fB\-o\fR, \fB\-\-once\fR
 Display the output once and then exit.
 .TP
-.B \-\^\-version, \-V
+\fB\-V\fR, \fB\-\-version\fR
 Display version information and exit.
 .TP
-.B \-\^\-help
+\fB\-h\fR, \fB\-\-help\fR
 Display usage information and exit.
-
 .SH SORT CRITERIA
 The following are valid sort criteria used to sort the individual slab caches
 and thereby determine what are the "top" slab caches to display.  The default
 sort criteria is to sort by the number of objects ("o").
-
+.PP
 The sort criteria can also be changed while slabtop is running by pressing
 the associated character.
-.TP
-.BR a: 
-sort by number of active objects
-.TP
-.BR b: 
-sort by objects per slab
-.TP
-.BR c: 
-sort by cache size
-.TP
-.BR l: 
-sort by number of slabs
-.TP
-.BR v
-sort by number of active slabs
-.TP
-.BR n: 
-sort by name
-.TP
-.BR o: 
-sort by number of objects
-.TP
-.BR p: 
-sort by pages per slab
-.TP
-.BR s: 
-sort by object size
-.TP
-.BR u: 
-sort by cache utilization
-
+.TS
+l l l.
+\fBcharacter	description	header\fR
+a	number of active objects	ACTIVE
+b	objects per slab	OBJ/SLAB
+c	cache size	CACHE SIZE
+l	number of slabs	SLABS
+v	number of active slabs	N/A
+n	name	NAME
+o	number of objects	OBJS
+p	pages per slab	N/A
+s	object size	OBJ SIZE
+u	cache utilization	USE
+.TE
 .SH COMMANDS
-.BR slabtop (1)
+.B slabtop
 accepts keyboard commands from the user during use.  The following are
 supported.  In the case of letters, both cases are accepted.
-
+.PP
 Each of the valid sort characters are also accepted, to change the sort
 routine. See the section
-.IR "SORT CRITERIA" .
-
+.BR "SORT CRITERIA" .
 .TP
 .BR <SPACEBAR>
 Refresh the screen.
 .TP
 .BR Q
 Quit the program.
-
 .SH FILES
-.IR /proc/slabinfo " \-\- slab information"
-
+.TP
+.I /proc/slabinfo
+slab information
 .SH "SEE ALSO"
 .BR free (1),
 .BR ps (1),
 .BR top (1),
 .BR vmstat (8)
-
 .SH NOTES
 Currently,
-.BR slabtop (1)
+.B slabtop
 requires a 2.4 or later kernel (specifically, a version 1.1 or later
 .IR /proc/slabinfo ).
 Kernel 2.2 should be supported in the future.
-
-The slabtop statistic header is tracking how many bytes of slabs are being used
-and it not a measure of physical memory. The 'Slab' field in the /proc/meminfo
-file is tracking information about used slab physical memory.
-
+.PP
+The slabtop statistic header is tracking how many bytes of slabs are being
+used and it not a measure of physical memory.  The 'Slab' field in the
+/proc/meminfo file is tracking information about used slab physical memory.
 .SH AUTHORS
 Written by Chris Rivera and Robert Love.
-
-.BR slabtop (1)
+.PP
+.B slabtop
 was inspired by Martin Bligh's perl script,
 .BR vmtop .
-The procps package is maintained by Albert Cahalan <albert@users.sf.net>.
-
-Please send bug reports to <procps-feedback@lists.sf.net>.
+.SH "REPORTING BUGS"
+Please send bug reports to
+.UR procps@freelists.org
+.UE

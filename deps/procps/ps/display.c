@@ -1,57 +1,72 @@
 /*
- * Copyright 1998-2003 by Albert Cahalan; all rights resered.
- * This file may be used subject to the terms and conditions of the
- * GNU Library General Public License Version 2, or any later version
- * at your option, as published by the Free Software Foundation.
- * This program is distributed in the hope that it will be useful,
+ * display.c - display ps output
+ * Copyright 1998-2003 by Albert Cahalan
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Library General Public License for more details.
- */                                                                     
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
-#include <stdlib.h>
+#include <grp.h>
+#include <locale.h>
+#include <pwd.h>
+#include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <error.h>
 
-#if (__GNU_LIBRARY__ >= 6)
-# include <locale.h>
-#endif
-
-/* username lookups */
-#include <sys/types.h>
-#include <pwd.h>
-#include <grp.h>
-
-/* major/minor number */
 #include <sys/sysmacros.h>
+#include <sys/types.h>
 
-#include <signal.h>   /* catch signals */
-
-#include "common.h"
-#include "../proc/wchan.h"
-#include "../proc/version.h"
+#include "../proc/alloc.h"
 #include "../proc/readproc.h"
-#include "../proc/sysinfo.h"
 #include "../proc/sig.h"
+#include "../proc/sysinfo.h"
+#include "../proc/version.h"
+#include "../proc/wchan.h"
+
+#include "../include/fileutils.h"
+#include "common.h"
 
 #ifndef SIGCHLD
 #define SIGCHLD SIGCLD
 #endif
+
+char *myname;
 
 /* just reports a crash */
 static void signal_handler(int signo){
   if(signo==SIGPIPE) _exit(0);  /* "ps | head" will cause this */
   /* fprintf() is not reentrant, but we _exit() anyway */
   fprintf(stderr,
-    "\n\n"
-    "Signal %d (%s) caught by ps (%s).\n"
-    "Please send bug reports to <feedback@lists.sf.net> or <albert@users.sf.net>\n",
+    _("Signal %d (%s) caught by %s (%s).\n"),
     signo,
     signal_number_to_name(signo),
+    myname,
     procps_version
   );
-  _exit(signo+128);
+  switch (signo) {
+    case SIGHUP:
+    case SIGUSR1:
+    case SIGUSR2:
+      exit(EXIT_FAILURE);
+    default:
+      error_at_line(0, 0, __FILE__, __LINE__, "%s", _("please report this bug"));
+      signal(signo, SIG_DFL);  /* allow core file creation */
+      kill(getpid(), signo);
+  }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -223,7 +238,7 @@ static unsigned task_format_needs;
 
 #define needs_for_format (proc_format_needs|task_format_needs)
 
-#define PROC_ONLY_FLAGS (PROC_FILLENV|PROC_FILLARG|PROC_FILLCOM|PROC_FILLMEM)
+#define PROC_ONLY_FLAGS (PROC_FILLENV|PROC_FILLARG|PROC_FILLCOM|PROC_FILLMEM|PROC_FILLCGROUP)
 
 /***** munge lists and determine openproc() flags */
 static void lists_and_needs(void){
@@ -252,7 +267,7 @@ static void lists_and_needs(void){
         t_end->need = 0;
         break;
       default:
-        fprintf(stderr, "please report this bug\n");
+        catastrophic_failure(__FILE__, __LINE__, _("please report this bug"));
         // FALL THROUGH
       case CF_PRINT_AS_NEEDED:
       case CF_PRINT_EVERY_TIME:
@@ -288,13 +303,13 @@ static void lists_and_needs(void){
   }
   // convert ARG to COM as a standard
   if(proc_format_needs & PROC_FILLARG){
-    proc_format_needs |= PROC_FILLCOM;
+    proc_format_needs |= (PROC_FILLCOM | PROC_EDITCMDLCVT);
     proc_format_needs &= ~PROC_FILLARG;
   }
   if(bsd_e_option){
     if(proc_format_needs&PROC_FILLCOM) proc_format_needs |= PROC_FILLENV;
   }
-  
+
   /* FIXME  broken filthy hack -- got to unify some stuff here */
   if( ( (proc_format_needs|task_format_needs|needs_for_sort) & PROC_FILLWCHAN) && !wchan_is_number)
     if (open_psdb(namelist_file)) wchan_is_number = 1;
@@ -309,15 +324,15 @@ static void lists_and_needs(void){
 static int want_this_proc_pcpu(proc_t *buf){
   unsigned long long used_jiffies;
   unsigned long pcpu = 0;
-  unsigned long long avail_jiffies;
+  unsigned long long seconds;
 
   if(!want_this_proc(buf)) return 0;
 
   used_jiffies = buf->utime + buf->stime;
   if(include_dead_children) used_jiffies += (buf->cutime + buf->cstime);
 
-  avail_jiffies = seconds_since_boot * Hertz - buf->start_time;
-  if(avail_jiffies) pcpu = (used_jiffies << 24) / avail_jiffies;
+  seconds = seconds_since_boot - buf->start_time / Hertz;
+  if(seconds) pcpu = (used_jiffies * 1000ULL / Hertz) / seconds;
 
   buf->pcpu = pcpu;  // fits in an int, summing children on 128 CPUs
 
@@ -326,58 +341,47 @@ static int want_this_proc_pcpu(proc_t *buf){
 
 /***** just display */
 static void simple_spew(void){
-  proc_t buf;
+  static proc_t buf, buf2;       // static avoids memset
   PROCTAB* ptp;
+
   ptp = openproc(needs_for_format | needs_for_sort | needs_for_select | needs_for_threads);
   if(!ptp) {
-    fprintf(stderr, "Error: can not access /proc.\n");
+    fprintf(stderr, _("error: can not access /proc\n"));
     exit(1);
   }
-  memset(&buf, '#', sizeof(proc_t));
   switch(thread_flags & (TF_show_proc|TF_loose_tasks|TF_show_task)){
   case TF_show_proc:                   // normal non-thread output
     while(readproc(ptp,&buf)){
       if(want_this_proc(&buf)){
         show_one_proc(&buf, proc_format_list);
       }
-      if(buf.cmdline) free((void*)*buf.cmdline); // ought to reuse
-      if(buf.environ) free((void*)*buf.environ); // ought to reuse
     }
     break;
   case TF_show_proc|TF_loose_tasks:    // H option
     while(readproc(ptp,&buf)){
-      proc_t buf2;
       // must still have the process allocated
       while(readtask(ptp,&buf,&buf2)){
         if(!want_this_proc(&buf)) continue;
         show_one_proc(&buf2, task_format_list);
       }
-      if(buf.cmdline) free((void*)*buf.cmdline); // ought to reuse
-      if(buf.environ) free((void*)*buf.environ); // ought to reuse
     }
     break;
   case TF_show_proc|TF_show_task:      // m and -m options
     while(readproc(ptp,&buf)){
       if(want_this_proc(&buf)){
-        proc_t buf2;
         show_one_proc(&buf, proc_format_list);
         // must still have the process allocated
         while(readtask(ptp,&buf,&buf2)) show_one_proc(&buf2, task_format_list);
       }
-      if(buf.cmdline) free((void*)*buf.cmdline); // ought to reuse
-      if(buf.environ) free((void*)*buf.environ); // ought to reuse
-    }
+     }
     break;
   case TF_show_task:                   // -L and -T options
     while(readproc(ptp,&buf)){
       if(want_this_proc(&buf)){
-        proc_t buf2;
         // must still have the process allocated
         while(readtask(ptp,&buf,&buf2)) show_one_proc(&buf2, task_format_list);
       }
-      if(buf.cmdline) free((void*)*buf.cmdline); // ought to reuse
-      if(buf.environ) free((void*)*buf.environ); // ought to reuse
-    }
+   }
     break;
   }
   closeproc(ptp);
@@ -390,7 +394,7 @@ static void prep_forest_sort(void){
 
   if(!sort_list) {     /* assume start time order */
     incoming = search_format_array("start_time");
-    if(!incoming) fprintf(stderr, "Could not find start_time!\n");
+    if(!incoming) { fprintf(stderr, _("could not find start_time\n")); exit(1); }
     tmp_list = malloc(sizeof(sort_node));
     tmp_list->reverse = 0;
     tmp_list->typecode = '?'; /* what was this for? */
@@ -401,7 +405,7 @@ static void prep_forest_sort(void){
   }
   /* this is required for the forest option */
   incoming = search_format_array("ppid");
-  if(!incoming) fprintf(stderr, "Could not find ppid!\n");
+  if(!incoming) { fprintf(stderr, _("could not find ppid\n")); exit(1); }
   tmp_list = malloc(sizeof(sort_node));
   tmp_list->reverse = 0;
   tmp_list->typecode = '?'; /* what was this for? */
@@ -433,16 +437,10 @@ static void show_proc_array(PROCTAB *restrict ptp, int n){
   while(n--){
     if(thread_flags & TF_show_proc) show_one_proc(*p, proc_format_list);
     if(thread_flags & TF_show_task){
-      proc_t buf2;
+      static proc_t buf2;         // static avoids memset
       // must still have the process allocated
       while(readtask(ptp,*p,&buf2)) show_one_proc(&buf2, task_format_list);
-      // must not attempt to free cmdline and environ
     }
-    /* no point freeing any of this -- won't need more mem */
-//    if((*p)->cmdline) free((void*)*(*p)->cmdline);
-//    if((*p)->environ) free((void*)*(*p)->environ);
-//    memset(*p, '%', sizeof(proc_t)); /* debug */
-//    free(*p);
     p++;
   }
 }
@@ -459,9 +457,6 @@ static void show_tree(const int self, const int n, const int level, const int ha
     forest_prefix[level] = '\0';
   }
   show_one_proc(processes[self],format_list);  /* first show self */
-  /* no point freeing any of this -- won't need more mem */
-//  if(processes[self]->cmdline) free((void*)*processes[self]->cmdline);
-//  if(processes[self]->environ) free((void*)*processes[self]->environ);
   for(;;){  /* look for children */
     if(i >= n) return; /* no children */
     if(processes[i]->ppid == processes[self]->XXXID) break;
@@ -509,10 +504,12 @@ not_root:
   /* don't free the array because it takes time and ps will exit anyway */
 }
 
+#if 0
 static int want_this_proc_nop(proc_t *dummy){
   (void)dummy;
   return 1;
 }
+#endif
 
 /***** sorted or forest */
 static void fancy_spew(void){
@@ -522,12 +519,12 @@ static void fancy_spew(void){
 
   ptp = openproc(needs_for_format | needs_for_sort | needs_for_select | needs_for_threads);
   if(!ptp) {
-    fprintf(stderr, "Error: can not access /proc.\n");
+    fprintf(stderr, _("error: can not access /proc\n"));
     exit(1);
   }
 
   if(thread_flags & TF_loose_tasks){
-    pd = readproctab2(want_this_proc_nop, want_this_proc_pcpu, ptp);
+    pd = readproctab3(want_this_proc_pcpu, ptp);
   }else{
     pd = readproctab2(want_this_proc_pcpu, (void*)0xdeadbeaful, ptp);
   }
@@ -545,9 +542,13 @@ static void fancy_spew(void){
 
 /***** no comment */
 int main(int argc, char *argv[]){
-#if (__GNU_LIBRARY__ >= 6)
-  setlocale (LC_CTYPE, "");
-#endif
+  atexit(close_stdout);
+  myname = strrchr(*argv, '/');
+  if (myname) ++myname; else myname = *argv;
+
+  setlocale (LC_ALL, "");
+  bindtextdomain(PACKAGE, LOCALEDIR);
+  textdomain(PACKAGE);
 
 #ifdef DEBUG
   init_stack_trace(argv[0]);
@@ -562,6 +563,7 @@ int main(int argc, char *argv[]){
     default:
       sigaction(i,&sa,NULL);
     case 0:
+    case SIGCONT:
     case SIGINT:   /* ^C */
     case SIGTSTP:  /* ^Z */
     case SIGTTOU:  /* see stty(1) man page */

@@ -1,13 +1,22 @@
 /*
- * Copyright 1998-2003 by Albert Cahalan; all rights reserved.
- * This file may be used subject to the terms and conditions of the
- * GNU Library General Public License Version 2, or any later version
- * at your option, as published by the Free Software Foundation.
- * This program is distributed in the hope that it will be useful,
+ * ksym.c - kernel symbol handling
+ * Copyright 1998-2003 by Albert Cahalan
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Library General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,6 +29,7 @@
 #include <sys/mman.h>
 #include <sys/utsname.h>
 #include "procps.h"
+#include "alloc.h"
 #include "version.h"
 #include "sysinfo.h" /* smp_num_cpus */
 #include "wchan.h"  // to verify prototypes
@@ -230,8 +240,7 @@ static void read_file(const char *restrict filename, char **bufp, unsigned *rest
   unsigned room = *roomp;
 
   if(!room) goto hell;     /* failed before */
-  if(!buf) buf = (char*) malloc(room);
-  if(!buf) goto hell;
+  if(!buf) buf = xmalloc(room);
 open_again:
   fd = open(filename, O_RDONLY|O_NOCTTY|O_NONBLOCK);
   if(fd<0){
@@ -257,8 +266,7 @@ open_again:
       total += done;
       /* more to go, but no room in buffer */
       room *= 2;
-      tmp = (char*) realloc(buf, room);
-      if(!tmp) goto hell;
+      tmp = xrealloc(buf, room);
       buf = tmp;
       continue;
     }
@@ -276,7 +284,7 @@ open_again:
   close(fd);
   return;
 hell:
-  if(buf) free(buf);
+  free(buf);
   *bufp = NULL;
   *roomp = 0;   /* this function will never work again */
   total = 0;
@@ -296,9 +304,8 @@ static int parse_ksyms(void) {
   for(;;){
     void *vp;
     idx_room *= 2;
-    vp = realloc(ksyms_index, sizeof(symb)*idx_room);
-    if(!vp) goto bad_alloc;
-    ksyms_index = (symb*) vp;
+    vp = xrealloc(ksyms_index, sizeof(symb)*idx_room);
+    ksyms_index = vp;
 bypass:
     for(;;){
       char *saved;
@@ -318,18 +325,16 @@ bypass:
   }
 
   if(0){
-bad_alloc:
-    fprintf(stderr, "Warning: not enough memory available\n");
-  }
-  if(0){
 bad_parse:
     fprintf(stderr, "Warning: "KSYMS_FILENAME" not normal\n");
   }
 quiet_goodbye:
   idx_room = 0;
-  if(ksyms_data) free(ksyms_data) , ksyms_data = NULL;
+  free(ksyms_data);
+  ksyms_data = NULL;
   ksyms_room = 0;
-  if(ksyms_index) free(ksyms_index) , ksyms_index = NULL;
+  free(ksyms_index);
+  ksyms_index = NULL;
   ksyms_count = 0;
   return 0;
 }
@@ -349,7 +354,7 @@ static int sysmap_mmap(const char *restrict const filename, message_fn message) 
   if(!S_ISREG(sbuf.st_mode)) goto bad_open;
   if(sbuf.st_size < 5000) goto bad_open;  /* if way too small */
   /* Would be shared read-only, but we want '\0' after each name. */
-  endp = (char*) mmap(0, sbuf.st_size + 1, PROT_READ|PROT_WRITE, MAP_PRIVATE, fd, 0);
+  endp = mmap(0, sbuf.st_size + 1, PROT_READ|PROT_WRITE, MAP_PRIVATE, fd, 0);
   sysmap_data = endp;
   while(*endp==' '){  /* damn Alpha machine types */
     if(strncmp(endp,"                 w ", 19)) goto bad_parse;
@@ -367,9 +372,8 @@ static int sysmap_mmap(const char *restrict const filename, message_fn message) 
   for(;;){
     void *vp;
     sysmap_room *= 2;
-    vp = realloc(sysmap_index, sizeof(symb)*sysmap_room);
-    if(!vp) goto bad_alloc;
-    sysmap_index = (symb*) vp;
+    vp = xrealloc(sysmap_index, sizeof(symb)*sysmap_room);
+    sysmap_index = vp;
     for(;;){
       char *vstart;
       if(endp - sysmap_data >= sbuf.st_size){   /* if we reached the end */
@@ -425,10 +429,12 @@ good_match:;
     }
   }
 
+#ifdef BUILD_WITH_WHINE
   if(0){
 bad_match:
     message("Warning: %s does not match kernel data.\n", filename);
   }
+#endif
   if(0){
 bad_version:
     message("Warning: %s has an incorrect kernel version.\n", filename);
@@ -437,10 +443,12 @@ bad_version:
 bad_alloc:
     message("Warning: not enough memory available\n");
   }
+#ifdef BUILD_WITH_WHINE
   if(0){
 bad_parse:
     message("Warning: %s not parseable as a System.map\n", filename);
   }
+#endif
   if(0){
 bad_open:
     message("Warning: %s could not be opened as a System.map\n", filename);
@@ -448,7 +456,7 @@ bad_open:
 
   sysmap_room=0;
   sysmap_count=0;
-  if(sysmap_index) free(sysmap_index);
+  free(sysmap_index);
   sysmap_index = NULL;
   if(fd>=0) close(fd);
   if(sysmap_data) munmap(sysmap_data, sbuf.st_size + 1);
@@ -577,6 +585,7 @@ static const char * read_wchan_file(unsigned pid){
 
 /***************************************/
 
+static const symb fail = { .name = "?" };
 static const char dash[] = "-";
 static const char star[] = "*";
 
@@ -589,9 +598,6 @@ const char * lookup_wchan(unsigned KLONG address, unsigned pid) {
   const symb *good_symb;
   const char *ret;
   unsigned hash;
-
-  symb fail;
-  fail.name = "?";
 
   // can't cache it due to a race condition :-(
   if(use_wchan_file) return read_wchan_file(pid);

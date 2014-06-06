@@ -14,6 +14,7 @@
 #include "pwcache.h"
 
 #define SIGNAL_STRING
+#define QUICK_THREADS        /* copy (vs. read) some thread info from parent proc_t */
 
 EXTERN_C_BEGIN
 
@@ -30,6 +31,18 @@ EXTERN_C_BEGIN
 // neither tgid nor tid seemed correct. (in other words, FIXME)
 #define XXXID tid
 
+enum ns_type {
+    IPCNS = 0,
+    MNTNS,
+    NETNS,
+    PIDNS,
+    USERNS,
+    UTSNS,
+    NUM_NS         // total namespaces (fencepost)
+};
+extern const char *get_ns_name(int id);
+extern int get_ns_id(const char *name);
+
 // Basic data structure which holds all information we can get about a process.
 // (unless otherwise specified, fields are read from /proc/#/stat)
 //
@@ -40,11 +53,18 @@ typedef struct proc_t {
     int
         tid,		// (special)       task id, the POSIX thread ID (see also: tgid)
     	ppid;		// stat,status     pid of parent process
+    unsigned long       // next 2 fields are NOT filled in by readproc
+        maj_delta,      // stat (special) major page faults since last update
+        min_delta;      // stat (special) minor page faults since last update
     unsigned
         pcpu;           // stat (special)  %CPU usage (is not filled in by readproc!!!)
     char
     	state,		// stat,status     single-char code for process state (S=sleeping)
-    	pad_1,		// n/a             padding
+#ifdef QUICK_THREADS
+        pad_1,          // n/a             padding (psst, also used if multi-threaded)
+#else
+        pad_1,          // n/a             padding
+#endif
     	pad_2,		// n/a             padding
     	pad_3;		// n/a             padding
 // 2nd 16 bytes
@@ -82,24 +102,25 @@ typedef struct proc_t {
     long
 	priority,	// stat            kernel scheduling priority
 	nice,		// stat            standard unix nice level of process
-	rss,		// stat            resident set size from /proc/#/stat (pages)
+	rss,		// stat            identical to 'resident'
 	alarm,		// stat            ?
     // the next 7 members come from /proc/#/statm
-	size,		// statm           total # of pages of memory
-	resident,	// statm           number of resident set (non-swapped) pages (4k)
-	share,		// statm           number of pages of shared (mmap'd) memory
-	trs,		// statm           text resident set size
-	lrs,		// statm           shared-lib resident set size
-	drs,		// statm           data resident set size
-	dt;		// statm           dirty pages
+	size,		// statm           total virtual memory (as # pages)
+	resident,	// statm           resident non-swapped memory (as # pages)
+	share,		// statm           shared (mmap'd) memory (as # pages)
+	trs,		// statm           text (exe) resident set (as # pages)
+	lrs,		// statm           library resident set (always 0 w/ 2.6)
+	drs,		// statm           data+stack resident set (as # pages)
+	dt;		// statm           dirty pages (always 0 w/ 2.6)
     unsigned long
-	vm_size,        // status          same as vsize in kb
-	vm_lock,        // status          locked pages in kb
-	vm_rss,         // status          same as rss in kb
-	vm_data,        // status          data size
-	vm_stack,       // status          stack size
-	vm_exe,         // status          executable size
-	vm_lib,         // status          library size (all pages, not just used ones)
+	vm_size,        // status          equals 'size' (as kb)
+	vm_lock,        // status          locked pages (as kb)
+	vm_rss,         // status          equals 'rss' and/or 'resident' (as kb)
+	vm_data,        // status          data only size (as kb)
+	vm_stack,       // status          stack only size (as kb)
+	vm_swap,        // status          based on linux-2.6.34 "swap ents" (as kb)
+	vm_exe,         // status          equals 'trs' (as kb)
+	vm_lib,         // status          total, not just used, library pages (as kb)
 	rtprio,		// stat            real-time priority
 	sched,		// stat            scheduling class
 	vsize,		// stat            number of pages of virtual memory ...
@@ -110,8 +131,11 @@ typedef struct proc_t {
 	cmin_flt,	// stat            cumulative min_flt of process and child processes
 	cmaj_flt;	// stat            cumulative maj_flt of process and child processes
     char
-	**environ,	// (special)       environment string vector (/proc/#/environ)
-	**cmdline;	// (special)       command line string vector (/proc/#/cmdline)
+        **environ,      // (special)       environment string vector (/proc/#/environ)
+        **cmdline,      // (special)       command line string vector (/proc/#/cmdline)
+        **cgroup,       // (special)       cgroup string vector (/proc/#/cgroup)
+         *supgid,       // status          supplementary gids as comma delimited str
+         *supgrp;       // supp grp names as comma delimited str, derived from supgid
     char
 	// Be compatible: Digital allows 16 and NT allows 14 ???
     	euser[P_G_SZ],	// stat(),status   effective user name
@@ -130,8 +154,9 @@ typedef struct proc_t {
 	pgrp,		// stat            process group id
 	session,	// stat            session id
 	nlwp,		// stat,status     number of threads, or 0 if no clue
-	tgid,		// (special)       task group ID, the POSIX PID (see also: tid)
+	tgid,		// (special)       thread group ID, the POSIX PID (see also: tid)
 	tty,		// stat            full device number of controlling terminal
+	/* FIXME: int uids & gids should be uid_t or gid_t from pwd.h */
         euid, egid,     // stat(),status   effective
         ruid, rgid,     // status          real
         suid, sgid,     // status          saved
@@ -139,6 +164,13 @@ typedef struct proc_t {
 	tpgid,		// stat            terminal process group id
 	exit_signal,	// stat            might not be SIGCHLD
 	processor;      // stat            current (or most recent?) CPU
+#ifdef OOMEM_ENABLE
+    int
+        oom_score,      // oom_score       (badness for OOM killer)
+        oom_adj;        // oom_adj         (adjustment to OOM score)
+#endif
+    long
+        ns[NUM_NS];     // (ns subdir)     inode number of namespaces
 } proc_t;
 
 // PROCTAB: data structure holding the persistent information readproc needs
@@ -158,10 +190,10 @@ typedef struct PROCTAB {
 //    char deBug1[64];
     pid_t	taskdir_user;  // for threads
     int         did_fake; // used when taskdir is missing
-    int(*finder)(struct PROCTAB *restrict const, proc_t *restrict const);
-    proc_t*(*reader)(struct PROCTAB *restrict const, proc_t *restrict const);
-    int(*taskfinder)(struct PROCTAB *restrict const, const proc_t *restrict const, proc_t *restrict const, char *restrict const);
-    proc_t*(*taskreader)(struct PROCTAB *restrict const, const proc_t *restrict const, proc_t *restrict const, char *restrict const);
+    int(*finder)(struct PROCTAB *__restrict const, proc_t *__restrict const);
+    proc_t*(*reader)(struct PROCTAB *__restrict const, proc_t *__restrict const);
+    int(*taskfinder)(struct PROCTAB *__restrict const, const proc_t *__restrict const, proc_t *__restrict const, char *__restrict const);
+    proc_t*(*taskreader)(struct PROCTAB *__restrict const, const proc_t *__restrict const, proc_t *__restrict const, char *__restrict const);
     pid_t*	pids;	// pids of the procs
     uid_t*	uids;	// uids of procs
     int		nuid;	// cannot really sentinel-terminate unsigned short[]
@@ -173,44 +205,53 @@ typedef struct PROCTAB {
     unsigned pathlen;        // length of string in the above (w/o '\0')
 } PROCTAB;
 
-// initialize a PROCTAB structure holding needed call-to-call persistent data
+// Initialize a PROCTAB structure holding needed call-to-call persistent data
 extern PROCTAB* openproc(int flags, ... /* pid_t*|uid_t*|dev_t*|char* [, int n] */ );
 
-typedef struct proc_data_t {
-    proc_t **tab;
-    proc_t **proc;
-    proc_t **task;
-    int n;
-    int nproc;
-    int ntask;
-} proc_data_t;
+typedef struct proc_data_t {  // valued by: (else zero)
+    proc_t **tab;             //     readproctab2, readproctab3
+    proc_t **proc;            //     readproctab2
+    proc_t **task;            //  *  readproctab2
+    int n;                    //     readproctab2, readproctab3
+    int nproc;                //     readproctab2
+    int ntask;                //  *  readproctab2
+} proc_data_t;                //  *  when PROC_LOOSE_TASKS set
 
-extern proc_data_t *readproctab2(int(*want_proc)(proc_t *buf), int(*want_task)(proc_t *buf), PROCTAB *restrict const PT);
+extern proc_data_t *readproctab2(int(*want_proc)(proc_t *buf), int(*want_task)(proc_t *buf), PROCTAB *__restrict const PT);
+extern proc_data_t *readproctab3(int(*want_task)(proc_t *buf), PROCTAB *__restrict const PT);
 
 // Convenient wrapper around openproc and readproc to slurp in the whole process
 // table subset satisfying the constraints of flags and the optional PID list.
 // Free allocated memory with exit().  Access via tab[N]->member.  The pointer
 // list is NULL terminated.
-
 extern proc_t** readproctab(int flags, ... /* same as openproc */ );
 
-// clean-up open files, etc from the openproc()
+// Clean-up open files, etc from the openproc()
 extern void closeproc(PROCTAB* PT);
 
-// retrieve the next process matching the criteria set by the openproc()
-extern proc_t* readproc(PROCTAB *restrict const PT, proc_t *restrict p);
-extern proc_t* readtask(PROCTAB *restrict const PT, const proc_t *restrict const p, proc_t *restrict t);
+// Retrieve the next process or task matching the criteria set by the openproc().
+//
+// Note: When NULL is used as the readproc 'p', readtask 't' or readeither 'x'
+//       parameter, the library will allocate the necessary proc_t storage.
+//
+//       Alternatively, you may provide your own reuseable buffer address
+//       in which case that buffer *MUST* be initialized to zero one time
+//       only before first use.  Thereafter, the library will manage such
+//       a passed proc_t, freeing any additional acquired memory associated
+//       with the previous process or thread.
+extern proc_t* readproc(PROCTAB *__restrict const PT, proc_t *__restrict p);
+extern proc_t* readtask(PROCTAB *__restrict const PT, const proc_t *__restrict const p, proc_t *__restrict t);
+extern proc_t* readeither(PROCTAB *__restrict const PT, proc_t *__restrict x);
 
 // warning: interface may change
-extern int read_cmdline(char *restrict const dst, unsigned sz, unsigned pid);
+extern int read_cmdline(char *__restrict const dst, unsigned sz, unsigned pid);
 
 extern void look_up_our_self(proc_t *p);
 
-// deallocate space allocated by readproc
-
+// Deallocate space allocated by readproc
 extern void freeproc(proc_t* p);
 
-//fill out a proc_t for a single task
+// Fill out a proc_t for a single task
 extern proc_t * get_proc_stats(pid_t pid, proc_t *p);
 
 // openproc/readproctab:
@@ -232,16 +273,24 @@ extern proc_t * get_proc_stats(pid_t pid, proc_t *p);
 #define PROC_FILLENV         0x0004 // alloc and fill in `environ'
 #define PROC_FILLUSR         0x0008 // resolve user id number -> user name
 #define PROC_FILLGRP         0x0010 // resolve group id number -> group name
-#define PROC_FILLSTATUS      0x0020 // read status -- currently unconditional
-#define PROC_FILLSTAT        0x0040 // read stat -- currently unconditional
+#define PROC_FILLSTATUS      0x0020 // read status
+#define PROC_FILLSTAT        0x0040 // read stat
 #define PROC_FILLWCHAN       0x0080 // look up WCHAN name
 #define PROC_FILLARG         0x0100 // alloc and fill in `cmdline'
+#define PROC_FILLCGROUP      0x0200 // alloc and fill in `cgroup`
+#define PROC_FILLSUPGRP      0x0400 // resolve supplementary group id -> group name
+#define PROC_FILLOOM         0x0800 // fill in proc_t oom_score and oom_adj
+#define PROC_FILLNS          0x8000 // fill in proc_t namespace information
 
-#define PROC_LOOSE_TASKS     0x0200 // threat threads as if they were processes
+#define PROC_LOOSE_TASKS     0x2000 // treat threads as if they were processes
 
 // Obsolete, consider only processes with one of the passed:
 #define PROC_PID             0x1000  // process id numbers ( 0   terminated)
 #define PROC_UID             0x4000  // user id numbers    ( length needed )
+
+#define PROC_EDITCGRPCVT    0x10000 // edit `cgroup' as single vector
+#define PROC_EDITCMDLCVT    0x20000 // edit `cmdline' as single vector
+#define PROC_EDITENVRCVT    0x40000 // edit `environ' as single vector
 
 // it helps to give app code a few spare bits
 #define PROC_SPARE_1     0x01000000

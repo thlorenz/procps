@@ -1,95 +1,150 @@
-// Copyright 2004 Nicholas Miell
-//
-// This file may be used subject to the terms and conditions of the
-// GNU Library General Public License Version 2 as published by the
-// Free Software Foundation.This program is distributed in the hope
-// that it will be useful, but WITHOUT ANY WARRANTY; without even the
-// implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-// PURPOSE. See the GNU Library General Public License for more
-// details.
+/*
+ * pwdx.c - print process working directory
+ * Copyright 2004 Nicholas Miell
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <regex.h>
-#include <limits.h>
-#include <unistd.h>
 #include <errno.h>
+#include <getopt.h>
+#include <limits.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "proc/version.h"
+#include "c.h"
+#include "nls.h"
+#include "xalloc.h"
+#include "fileutils.h"
 
-static void die(const char *msg) NORETURN;
-static void die(const char *msg)
+static void __attribute__ ((__noreturn__)) usage(FILE * out)
 {
-     fputs(msg, stderr);
-     exit(1);
+	fputs(USAGE_HEADER, out);
+	fprintf(out, _(" %s [options] pid...\n"), program_invocation_short_name);
+	fputs(USAGE_OPTIONS, out);
+	fputs(USAGE_HELP, out);
+	fputs(USAGE_VERSION, out);
+	fprintf(out, USAGE_MAN_TAIL("pwdx(1)"));
+
+	exit(out == stderr ? EXIT_FAILURE : EXIT_SUCCESS);
 }
 
-static void version(void) NORETURN;
-static void version(void)
+int check_pid_argument(char *input)
 {
-     printf("pwdx (%s)\n", procps_version);
-     exit(0);
+	int skip = 0;
+	long pid;
+	char *end = NULL;
+
+	if (!strncmp("/proc/", input, 6))
+		skip = 6;
+	errno = 0;
+	pid = strtol(input + skip, &end, 10);
+
+	if (errno || input + skip == end || (end && *end))
+		return 1;
+	if (pid < 1)
+		return 1;
+	return 0;
 }
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
-     char buf[PATH_MAX+1];
-     regex_t re;
-     int i;
+	int ch;
+	int retval = 0, i;
+	int alloclen = 128;
+	char *pathbuf;
 
-     if (argc < 2)
-          die("Usage: pwdx pid...\n");
+	static const struct option longopts[] = {
+		{"version", no_argument, 0, 'V'},
+		{"help", no_argument, 0, 'h'},
+		{NULL, 0, 0, 0}
+	};
 
-     // Allowed on the command line:
-     //
-     // --version
-     // -V
-     // /proc/nnnn
-     // nnnn
-     //
-     // where nnnn is any number that doesn't begin with 0.
-     //
-     // If --version or -V are present, further arguments are ignored
-     // completely.
-        
-     regcomp(&re, "^((/proc/+)?[1-9][0-9]*|-V|--version)$",
-             REG_EXTENDED|REG_NOSUB);
+#ifdef HAVE_PROGRAM_INVOCATION_NAME
+	program_invocation_name = program_invocation_short_name;
+#endif
+	setlocale (LC_ALL, "");
+	bindtextdomain(PACKAGE, LOCALEDIR);
+	textdomain(PACKAGE);
+	atexit(close_stdout);
 
-     for (i = 1; i < argc; i++) {
-          if (regexec(&re, argv[i], 0, NULL, 0) != 0) {
-               snprintf(buf, sizeof buf, "pwdx: invalid process id: %s\n", argv[i]);
-               die(buf);
-          }
-          if (!strcmp("-V", argv[i]) || !strcmp("--version", argv[i]))
-               version();
-     }
+	while ((ch = getopt_long(argc, argv, "Vh", longopts, NULL)) != -1)
+		switch (ch) {
+		case 'V':
+			printf(PROCPS_NG_VERSION);
+			return EXIT_SUCCESS;
+		case 'h':
+			usage(stdout);
+		default:
+			usage(stderr);
+		}
 
-     regfree(&re);
+	argc -= optind;
+	argv += optind;
 
-     for (i = 1; i < argc; i++) {
-          char * s = buf;
-          int len;
-          
-          // At this point, all arguments are in the form /proc/nnnn
-          // or nnnn, so a simple check based on the first char is
-          // possible
-          if (argv[i][0] != '/')
-               snprintf(buf, sizeof buf, "/proc/%s/cwd", argv[i]);
-          else
-               snprintf(buf, sizeof buf, "%s/cwd", argv[i]);
+	if (argc == 0)
+		usage(stderr);
 
-          // buf contains /proc/nnnn/cwd symlink name on entry, the
-          // target of that symlink on return
-          if ((len = readlink(buf, buf, PATH_MAX)) < 0) {
-               s = strerror(errno == ENOENT ? ESRCH : errno);
-          } else {
-               buf[len] = 0;
-          }
+	pathbuf = malloc(alloclen);
 
-          printf("%s: %s\n", argv[i], s);
-     }
+	for (i = 0; i < argc; i++) {
+		char *s;
+		ssize_t len, buflen;
+		/* Constant 10 is the length of strings "/proc/" + "/cwd" + 1 */
+		char *buf;
+		buflen = 10 + strlen(argv[i]) + 1;
+		buf = xmalloc(buflen);
 
-     return 0;
+		if (check_pid_argument(argv[i]))
+			xerrx(EXIT_FAILURE, _("invalid process id: %s"),
+			     argv[i]);
+		/*
+		 * At this point, all arguments are in the form
+		 * /proc/NNNN or NNNN, so a simple check based on
+		 * the first char is possible
+		 */
+		if (argv[i][0] != '/')
+			snprintf(buf, buflen, "/proc/%s/cwd", argv[i]);
+		else
+			snprintf(buf, buflen, "%s/cwd", argv[i]);
+
+		/*
+		 * buf contains /proc/NNNN/cwd symlink name
+		 * on entry, the target of that symlink on return
+		 */
+		while ((len = readlink(buf, pathbuf, alloclen)) == alloclen) {
+			alloclen *= 2;
+			pathbuf = realloc(pathbuf, alloclen);
+		}
+		free(buf);
+
+		if (len < 0) {
+			s = strerror(errno == ENOENT ? ESRCH : errno);
+			retval = EXIT_FAILURE;
+			fprintf(stderr, "%s: %s\n", argv[i], s);
+			continue;
+		} else {
+			pathbuf[len] = 0;
+			s = pathbuf;
+		}
+
+		printf("%s: %s\n", argv[i], s);
+	}
+	free(pathbuf);
+	return retval;
 }

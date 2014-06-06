@@ -1,18 +1,29 @@
 /*
- * Copyright 1998-2003 by Albert Cahalan; all rights resered.
- * This file may be used subject to the terms and conditions of the
- * GNU Library General Public License Version 2, or any later version
- * at your option, as published by the Free Software Foundation.
- * This program is distributed in the hope that it will be useful,
+ * sig.c - signal name, and number, conversions
+ * Copyright 1998-2003 by Albert Cahalan
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Library General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
+
+#include <ctype.h>
 #include <signal.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "sig.h"
+#include "c.h"
 
 /* Linux signals:
  *
@@ -116,7 +127,7 @@ int signal_name_to_number(const char *restrict name){
   /* search the table */
   {
     const mapstruct ms = {name,0};
-    const mapstruct *restrict const ptr = (const mapstruct*) bsearch(
+    const mapstruct *restrict const ptr = bsearch(
       &ms,
       sigtable,
       number_of_signals,
@@ -209,12 +220,55 @@ end:
   return ret;
 }
 
+/* strtosig is similar to print_given_signals() with exception, that
+ * this function takes a string, and converts it to a signal name or
+ * a number string depending on which way a round conversion is
+ * queried.  Non-existing signals return NULL.  Notice that the
+ * returned string should be freed after use.
+ */
+char *strtosig(const char *restrict s){
+  char *converted = NULL, *copy, *p, *endp;
+  int i, numsignal = 0;
+
+  copy = strdup(s);
+  if (!copy)
+    xerrx(EXIT_FAILURE, "cannot duplicate string");
+  for (p = copy; *p != '\0'; p++)
+    *p = toupper(*p);
+  p = copy;
+  if (p[0] == 'S' && p[1] == 'I' && p[2] == 'G')
+    p += 3;
+  if (isdigit(*p)){
+    numsignal = strtol(s,&endp,10);
+    if(*endp || endp==s) return NULL; /* not valid */
+  }
+  if (numsignal){
+    for (i = 0; i < number_of_signals; i++){
+      if (numsignal == sigtable[i].num){
+	converted = strdup(sigtable[i].name);
+	break;
+      }
+    }
+  } else {
+    for (i = 0; i < number_of_signals; i++){
+      if (strcmp(p, sigtable[i].name) == 0){
+	converted = malloc(sizeof(char) * 8);
+	if (converted)
+	  snprintf(converted, sizeof(converted) - 1, "%d", sigtable[i].num);
+	break;
+      }
+    }
+  }
+  free(p);
+  return converted;
+}
+
 void pretty_print_signals(void){
   int i = 0;
   while(++i <= number_of_signals){
     int n;
     n = printf("%2d %s", i, signal_number_to_name(i));
-    if(i%7) printf("           \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" + n);
+    if(n>0 && i%7) printf("%s", "           \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0" + n);
     else printf("\n");
   }
   if((i-1)%7) printf("\n");

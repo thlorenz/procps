@@ -1,13 +1,22 @@
 /*
- * Copyright 1998-2002 by Albert Cahalan; all rights resered.
- * This file may be used subject to the terms and conditions of the
- * GNU Library General Public License Version 2, or any later version
- * at your option, as published by the Free Software Foundation.
- * This program is distributed in the hope that it will be useful,
+ * escape.c - printing handling
+ * Copyright 1998-2002 by Albert Cahalan
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Library General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
+
 #include <stdio.h>
 #include <sys/types.h>
 #include <string.h>
@@ -15,7 +24,7 @@
 #include "escape.h"
 #include "readproc.h"
 
-#if (__GNU_LIBRARY__ >= 6)
+#if (__GNU_LIBRARY__ >= 6) && (!defined(__UCLIBC__) || defined(__UCLIBC_HAS_WCHAR__))
 # include <wchar.h>
 # include <wctype.h>
 # include <stdlib.h>  /* MB_CUR_MAX */
@@ -23,11 +32,7 @@
 # include <langinfo.h>
 #endif
 
-#ifndef wcwidth
-extern int (*wcwidth)(wchar_t);
-#endif
-
-#if (__GNU_LIBRARY__ >= 6)
+#if (__GNU_LIBRARY__ >= 6) && (!defined(__UCLIBC__) || defined(__UCLIBC_HAS_WCHAR__))
 static int escape_str_utf8(char *restrict dst, const char *restrict src, int bufsize, int *maxcells){
   int my_cells = 0;
   int my_bytes = 0;
@@ -50,13 +55,6 @@ static int escape_str_utf8(char *restrict dst, const char *restrict src, int buf
       /* invalid multibyte sequence -- zeroize state */
       memset (&s, 0, sizeof (s));
       *(dst++) = '?';
-      src++;
-      my_cells++;
-      my_bytes++;
-
-    } else if (len==1) {
-      /* non-multibyte */
-      *(dst++) = isprint(*src) ? *src : '?';
       src++;
       my_cells++;
       my_bytes++;
@@ -102,7 +100,7 @@ static int escape_str_utf8(char *restrict dst, const char *restrict src, int buf
     }
     //fprintf(stdout, "cells: %d\n", my_cells);
   }
-  *(dst++) = '\0';
+  *dst = '\0';
 
   // fprintf(stderr, "maxcells: %d, my_cells; %d\n", *maxcells, my_cells);
 
@@ -118,16 +116,16 @@ int escape_str(char *restrict dst, const char *restrict src, int bufsize, int *m
   int my_cells = 0;
   int my_bytes = 0;
   const char codes[] =
-  "Z-------------------------------"
-  "********************************"
-  "********************************"
-  "*******************************-"
-  "--------------------------------"
-  "********************************"
-  "********************************"
-  "********************************";
+  "Z..............................."
+  "||||||||||||||||||||||||||||||||"
+  "||||||||||||||||||||||||||||||||"
+  "|||||||||||||||||||||||||||||||."
+  "????????????????????????????????"
+  "????????????????????????????????"
+  "????????????????????????????????"
+  "????????????????????????????????";
 
-#if (__GNU_LIBRARY__ >= 6)
+#if (__GNU_LIBRARY__ >= 6) && (!defined(__UCLIBC__) || defined(__UCLIBC_HAS_WCHAR__))
   static int utf_init=0;
 
   if(utf_init==0){
@@ -135,9 +133,10 @@ int escape_str(char *restrict dst, const char *restrict src, int bufsize, int *m
      char *enc = nl_langinfo(CODESET);
      utf_init = enc && strcasecmp(enc, "UTF-8")==0 ? 1 : -1;
   }
-  if (utf_init==1)
+  if (utf_init==1 && MB_CUR_MAX>1) {
      /* UTF8 locales */
      return escape_str_utf8(dst, src, bufsize, maxcells);
+  }
 #endif
 
   if(bufsize > *maxcells+1) bufsize=*maxcells+1; // FIXME: assumes 8-bit locale
@@ -147,12 +146,12 @@ int escape_str(char *restrict dst, const char *restrict src, int bufsize, int *m
       break;
     c = (unsigned char) *(src++);
     if(!c) break;
-    if(codes[c]=='-') c='?';
+    if(codes[c]!='|') c=codes[c];
     my_cells++;
     my_bytes++;
     *(dst++) = c;
   }
-  *(dst++) = '\0';
+  *dst = '\0';
 
   *maxcells -= my_cells;
   return my_bytes;        // bytes of text, excluding the NUL
@@ -163,7 +162,7 @@ int escape_str(char *restrict dst, const char *restrict src, int bufsize, int *m
 // escape an argv or environment string array
 //
 // bytes arg means sizeof(buf)
-int escape_strlist(char *restrict dst, const char *restrict const *restrict src, size_t bytes, int *cells){
+int escape_strlist(char *restrict dst, char *restrict const *restrict src, size_t bytes, int *cells){
   size_t i = 0;
 
   for(;;){
@@ -185,7 +184,7 @@ int escape_command(char *restrict const outbuf, const proc_t *restrict const pp,
   int end = 0;
 
   if(flags & ESC_ARGS){
-    const char **lc = (const char**)pp->cmdline;
+    char **lc = (char**)pp->cmdline;
     if(lc && *lc) return escape_strlist(outbuf, lc, bytes, cells);
   }
   if(flags & ESC_BRACKETS){
@@ -217,4 +216,17 @@ int escape_command(char *restrict const outbuf, const proc_t *restrict const pp,
   }
   outbuf[end] = '\0';
   return end;  // bytes, not including the NUL
+}
+
+/////////////////////////////////////////////////
+
+// copy an already 'escaped' string,
+// using the traditional escape.h calling conventions
+int escaped_copy(char *restrict dst, const char *restrict src, int bufsize, int *maxroom){
+  int n;
+  if (bufsize > *maxroom+1) bufsize = *maxroom+1;
+  n = snprintf(dst, bufsize, "%s", src);
+  if (n >= bufsize) n = bufsize-1;
+  *maxroom -= n;
+  return n;
 }

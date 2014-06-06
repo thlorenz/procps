@@ -1,47 +1,117 @@
 .\"             -*-Nroff-*-
 .\"  This page Copyright (C) 1993 Matt Welsh, mdw@sunsite.unc.edu.
+.\"  Long options where added at April 15th, 2011.
 .\"  Freely distributable under the terms of the GPL
-.TH FREE 1 "20 Mar 1993 " "Cohesive Systems" "Linux User's Manual"
+.TH FREE 1 "September 2011" "procps-ng" "User Commands"
 .SH NAME
 free \- Display amount of free and used memory in the system
 .SH SYNOPSIS
-.BR "free " [ "\-b" " | " "\-k" " | " "\-m" "] [" "\-o" "] [" "\-s"
-.I delay
-.RB "] [" "\-t" "] [" "\-V" ]
+.B free
+.RI [ options ]
 .SH DESCRIPTION
-\fBfree\fP displays the total amount of free and used physical and swap 
-memory in the system, as well as the buffers used by the kernel.
-The shared memory column should be ignored; it is obsolete.
-.SS Options
-The \fB-b\fP switch displays the amount of memory in bytes; the 
-\fB-k\fP switch (set by default) displays it in kilobytes; the \fB-m\fP
-switch displays it in megabytes.
-.PP
-The \fB-t\fP switch displays a line containing the totals.
-.PP
-The \fB-o\fP switch disables the display of a "buffer adjusted" line.
-If the -o option is not specified, \fBfree\fP subtracts buffer memory
-from the used memory and adds it to the free memory reported.
-.PP
-The \fB-s\fP switch activates continuous polling \fIdelay\fP seconds apart. You
-may actually specify any floating point number for \fIdelay\fP, 
+.B free
+displays the total amount of free and used physical and swap memory in the
+system, as well as the buffers and caches used by the kernel. The
+information is gathered by parsing /proc/meminfo. The displayed
+columns are:
+.TP
+\fBtotal\fR
+Total installed memory (MemTotal and SwapTotal in /proc/meminfo)
+.TP
+\fBused\fR
+Used memory (calculated as total - free)
+.TP
+\fBfree\fR
+Unused memory (MemFree and SwapFree in /proc/meminfo)
+.TP
+\fBshared\fR
+Memory used (mostly) by tmpfs (Shmem in /proc/meminfo, available on
+kernels 2.6.32, displayed as zero if not available)
+.TP
+\fBbuffers\fR
+Memory used by kernel buffers (Buffers in /proc/meminfo)
+.TP
+\fBcached\fR
+Memory used by the page cache (Cached in /proc/meminfo)
+.SH OPTIONS
+.TP
+\fB\-b\fR, \fB\-\-bytes\fR
+Display the amount of memory in bytes.
+.TP
+\fB\-k\fR, \fB\-\-kilo\fR
+Display the amount of memory in kilobytes.  This is the default.
+.TP
+\fB\-m\fR, \fB\-\-mega\fR
+Display the amount of memory in megabytes.
+.TP
+\fB\-g\fR, \fB\-\-giga\fR
+Display the amount of memory in gigabytes.
+.TP
+\fB\-\-tera\fR
+Display the amount of memory in terabytes.
+.TP
+\fB\-h\fR, \fB\-\-human\fP
+Show all output fields automatically scaled to shortest three digit unit and
+display the units of print out.  Following units are used.
+.sp
+.nf
+  B = bytes
+  K = kilos
+  M = megas
+  G = gigas
+  T = teras
+.fi
+.sp
+If unit is missing, and you have petabyte of RAM or swap, the number is in
+terabytes and columns might not be aligned with header.
+.TP
+\fB\-c\fR, \fB\-\-count\fR \fIcount\fR
+Display the result
+.I count
+times.  Requires the
+.B \-s
+option.
+.TP
+\fB\-l\fR, \fB\-\-lohi\fR
+Show detailed low and high memory statistics.
+.TP
+\fB\-o\fR, \fB\-\-old\fR
+Display the output in old format, the only difference being this option
+will disable the display of the "buffer adjusted" line.
+.TP
+\fB\-s\fR, \fB\-\-seconds\fR \fIseconds\fR
+Continuously display the result delay
+.I seconds
+apart.  You may actually specify any floating point number for
+.IR delay ,
 .BR usleep (3)
 is used for microsecond resolution delay times.
-.PP
-The \fB\-V\fP displays version information.
+.TP
+\fB\-\-si\fR
+Use power of 1000 not 1024.
+.TP
+\fB\-t\fR, \fB\-\-total\fR
+Display a line showing the column totals.
+.TP
+\fB\-\-help\fR
+Print help.
+.TP
+\fB\-V\fR, \fB\-\-version\fR
+Display version information.
+.PD
 .SH FILES
-.ta
-.IR /proc/meminfo "\-\- memory information"
-.fi
-
+.TP
+/proc/meminfo
+memory information
+.PD
 .SH "SEE ALSO"
 .BR ps (1),
 .BR slabtop (1),
-.BR vmstat (8),
-.BR top(1)
-
+.BR top "(1),
+.BR vmstat (8).
 .SH AUTHORS
-Written by Brian Edmonds. 
-
-Send bug reports to <albert@users.sf.net>
-
+Written by Brian Edmonds.
+.SH "REPORTING BUGS"
+Please send bug reports to
+.UR procps@freelists.org
+.UE

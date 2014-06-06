@@ -1,21 +1,30 @@
 /*
- * Copyright 1998-2002 by Albert Cahalan; all rights resered.         
- * This file may be used subject to the terms and conditions of the
- * GNU Library General Public License Version 2, or any later version  
- * at your option, as published by the Free Software Foundation.
- * This program is distributed in the hope that it will be useful,
+ * select.c - ps process selection
+ * Copyright 1998-2002 by Albert Cahalan
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Library General Public License for more details.
- */                                 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
-#include <string.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "../proc/procps.h"
+#include "../proc/readproc.h"
 
 #include "common.h"
-#include "../proc/readproc.h"
-#include "../proc/procps.h"
 
 //#define process_group_leader(p) ((p)->pgid    == (p)->tgid)
 //#define some_other_user(p)      ((p)->euid    != cached_euid)
@@ -59,7 +68,7 @@ const char *select_bits_setup(void){
     simple_select = 0;
     break;
   default:
-    return "Process selection options conflict.";
+    return _("process selection options conflict");
     break;
   }
   return NULL;
@@ -83,7 +92,7 @@ static int proc_was_listed(proc_t *buf){
   while(sn){
     switch(sn->typecode){
     default:
-      printf("Internal error in ps! Please report this bug.\n");
+      catastrophic_failure(__FILE__, __LINE__, _("please report this bug"));
 
 #define return_if_match(foo,bar) \
         i=sn->n; while(i--) \
