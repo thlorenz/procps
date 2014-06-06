@@ -194,64 +194,9 @@ NAN_METHOD(Sysinfo_Getstat) {
   NanReturnUndefined();
 }
 
-#include <stdlib.h>
-// should be same as `vmstat -D`, but is not
-// in particular 3 partitions are counted as disks
-// and other numbers are off as well, namely writes are doubled and merged writes halfed
-static void disksum_format(void) {
-
-  FILE *fDiskstat;
-  struct disk_stat *disks;
-  struct partition_stat *partitions;
-  int ndisks, i;
-  unsigned long reads, merged_reads, read_sectors, milli_reading, writes,
-                merged_writes, written_sectors, milli_writing, inprogress_IO,
-                milli_spent_IO, weighted_milli_spent_IO;
-
-  reads=merged_reads=read_sectors=milli_reading=writes=merged_writes= \
-  written_sectors=milli_writing=inprogress_IO=milli_spent_IO= \
-  weighted_milli_spent_IO=0;
-
-  if ((fDiskstat=fopen("/proc/diskstats", "rb"))){
-    fclose(fDiskstat);
-    ndisks=getdiskstat(&disks, &partitions);
-    printf("%13d disks \n", ndisks);
-    printf("%13d partitions \n", getpartitions_num(disks, ndisks));
-
-    for(i=0; i<ndisks; i++){
-         reads+=disks[i].reads;
-         merged_reads+=disks[i].merged_reads;
-         read_sectors+=disks[i].reads_sectors;
-         milli_reading+=disks[i].milli_reading;
-         writes+=disks[i].writes;
-         merged_writes+=disks[i].merged_writes;
-         written_sectors+=disks[i].written_sectors;
-         milli_writing+=disks[i].milli_writing;
-         inprogress_IO+=disks[i].inprogress_IO?disks[i].inprogress_IO/1000:0;
-         milli_spent_IO+=disks[i].milli_spent_IO?disks[i].milli_spent_IO/1000:0;
-      }
-
-    printf("%13lu total reads\n",reads);
-    printf("%13lu merged reads\n",merged_reads);
-    printf("%13lu read sectors\n",read_sectors);
-    printf("%13lu milli reading\n",milli_reading);
-    printf("%13lu writes\n",writes);
-    printf("%13lu merged writes\n",merged_writes);
-    printf("%13lu written sectors\n",written_sectors);
-    printf("%13lu milli writing\n",milli_writing);
-    printf("%13lu inprogress IO\n",inprogress_IO);
-    printf("%13lu milli spent IO\n",milli_spent_IO);
-
-    free(disks);
-    free(partitions);
-  }
-}
-
 NAN_METHOD(Sysinfo_GetDiskStat) {
   NanScope();
   NanCallback *cb = new NanCallback(args[0].As<Function>());
-
-  disksum_format();
 
   disk_stat *disks;
   partition_stat *partitions;

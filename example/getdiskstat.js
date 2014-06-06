@@ -7,6 +7,7 @@ function inspect(obj, depth) {
 var sysinfo = require('../').sysinfo;
 var stat = sysinfo.getdiskstat();
 
-//inspect(stat);
+inspect(stat);
+
 console.log('%d disks', stat.disks.length)
 console.log('%d partitions', stat.partitions.length)
