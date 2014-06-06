@@ -82,9 +82,10 @@ var shifts = {
 };
 
 var sysinfo = exports.sysinfo = {};
+
 /**
  * A hybrid of `procps.meminfo` and `free`.
- * 
+ *
  * @name sysinfo::meminfo
  * @function
  * @param {string=} unit `'b'|'k'|'m'|'g'` to return usage in Bytes|KB|MB|GB respectively
@@ -133,8 +134,40 @@ function inspect(obj, depth) {
   console.error(require('util').inspect(obj, false, depth || 5, true));
 }
 
+/*
+ * Some values in /proc are expressed in units of 1/HZ seconds, where HZ
+ * is the kernel clock tick rate.
+ *
+ * @name sysinfo::Hertz
+ */
 sysinfo.Hertz = procps.sysinfo_Hertz();
 
+/**
+ * Gets statistics about cpu, process and memory usage.
+ * `procps.getstat` used by various `vmstat` functions.
+ *
+ * @name sysinfo::getstat
+ * @function
+ * @return {Object} with the following properties:
+ * - **cpuUse**:    non-nice user cpu ticks
+ * - **cpuNic**:    nice user cpu ticks
+ * - **cpuSys**:    system cpu ticks
+ * - **cpuIdl**:    idle cpu ticks
+ * - **cpuIow**:    IO-wait cpu ticks
+ * - **cpuXxx**:    IRQ cpu ticks
+ * - **cpuYyy**:    softirq cpu ticks
+ * - **cpuZzz**:    stolen irq ticks
+ * - **pgpgin**:    pages paged in
+ * - **pgpgout**:   pages paged out
+ * - **pswpin**:    pages swapped in
+ * - **pswpout**:   pages swapped out
+ * - **intr**:      interrupts
+ * - **ctxt**:      CPU context switches
+ * - **running**:   processes running
+ * - **blocked**:   processes blocked
+ * - **btime**:     boot time
+ * - **processes**: forks
+ */
 sysinfo.getstat = function getstat() {
   var args;
   procps.sysinfo_getstat(function () { args = arguments; });
@@ -161,42 +194,61 @@ sysinfo.getstat = function getstat() {
 
   pairs.reduce(function (acc, k, idx) {
     acc[k] = [ args[idx * 2], args[idx * 2 + 1] ];
-    return acc; 
+    return acc;
   }, acc)
 
   idx = pairs.length * 2;
 
-  acc.running   = args[idx++];
-  acc.blocked   = args[idx++];
-  acc.btime     = args[idx++];
-  acc.processes = args[idx++];
+  acc.running   = args[idx++]; // processes running
+  acc.blocked   = args[idx++]; // processes blocked
+  acc.btime     = args[idx++]; // boot time
+  acc.processes = args[idx++]; // forks
 
   return acc;
 }
 
+/**
+ * Gets statistics about disks/devices and partitions on the machine.
+ *
+ * ##### Example DiskStats
+ *
+ *```js
+ * { disks:
+ *  [ { diskName: 'sda',
+ *      writes: 51770,
+ *      weightedMilliSpentIO: 121633,
+ *      reads: 14706,
+ *      partitions: 2,
+ *      milliWriting: 102280,
+ *      milliSpentIO: 24633,
+ *      milliReading: 19366,
+ *      mergedWrites: 131130,
+ *      mergedReads: 3164,
+ *      inprogressIO: 0,
+ *      writtenSectors: 1554100,
+ *      readsSectors: 486100 },
+ *    { diskName: 'loop0',
+ *      ...
+ *   partitions:
+ *    [ { partitionName: 'sda1',
+ *        requestedWrites: 1554100,
+ *        writes: 51693,
+ *        reads: 14553,
+ *        parentDisk: 0,
+ *        readsSectors: 483762 },
+ *      { partitionName: 'sda2', 
+ *      ...
+ *    ]}
+ *```
+ *
+ * @name sysinfo::getdiskstat
+ * @function
+ * @return {Object} with `disks` array and `partitions` array
+ *
+ */
 sysinfo.getdiskstat = function getdiskstat() {
   var args;
   procps.sysinfo_getdiskstat(function () { args = arguments; });
 
   return { disks: args[0], partitions: args[1] };
-}
-
-exports.vmstat = function () {
-  // new format
-}
-
-exports.vmsumstat = function () {
-  // sum_format
-}
-
-exports.diskstat = function () {
- // diskformat
-}
-
-exports.slabstat = function () {
-  // slabformat
-}
-
-exports.disksumstat = function () {
-  // disksum_format
 }
