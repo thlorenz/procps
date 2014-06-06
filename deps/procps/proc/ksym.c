@@ -439,10 +439,6 @@ bad_match:
 bad_version:
     message("Warning: %s has an incorrect kernel version.\n", filename);
   }
-  if(0){
-bad_alloc:
-    message("Warning: not enough memory available\n");
-  }
 #ifdef BUILD_WITH_WHINE
   if(0){
 bad_parse:
