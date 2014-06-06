@@ -149,6 +149,7 @@ sysinfo.Hertz = procps.sysinfo_Hertz();
  * @name sysinfo::getstat
  * @function
  * @return {Object} with the following properties:
+ *
  * - **cpuUse**:    non-nice user cpu ticks
  * - **cpuNic**:    nice user cpu ticks
  * - **cpuSys**:    system cpu ticks
@@ -167,6 +168,7 @@ sysinfo.Hertz = procps.sysinfo_Hertz();
  * - **blocked**:   processes blocked
  * - **btime**:     boot time
  * - **processes**: forks
+ *  
  */
 sysinfo.getstat = function getstat() {
   var args;

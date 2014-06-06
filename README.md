@@ -1,6 +1,7 @@
 # procps [![build status](https://secure.travis-ci.org/thlorenz/procps.png?branch=master)](http://travis-ci.org/thlorenz/procps)
 
-Node.js bindings for [procps](http://procps.sourceforge.net/), a library that provides information about processes using the `/proc` filesystem.  
+Node.js bindings for [procps](http://procps.sourceforge.net/), a library that provides information about processes using
+the `/proc` filesystem, using the [better maintained fork](https://gitorious.org/procps/procps/).
 
 ## Supported Platforms
 
@@ -9,6 +10,23 @@ Unixes with a `/proc` directory only. Tested on `arch linux` and `ubuntu`.
 ## Installation
 
     npm install procps
+
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](http://doctoc.herokuapp.com/)*
+
+- [Example](#example)
+- [API](#api)
+    - [readproctab::flags](#readproctabflags)
+    - [readproctab::flagsFillAll](#readproctabflagsfillall)
+    - [readproctab(flags_) → {Array.<Object>}](#readproctabflags_-→-arrayobject)
+    - [sysinfo::getdiskstat() → {Object}](#sysinfogetdiskstat-→-object)
+    - [sysinfo::getstat() → {Object}](#sysinfogetstat-→-object)
+    - [sysinfo::meminfo(unit) → {Object}](#sysinfomeminfounit-→-object)
+- [Caveats](#caveats)
+- [LICENSE](#license)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Example
 
@@ -92,9 +110,9 @@ Use these in order to fill/loose specific process properties.</p>
 <dt class="tag-source">Source:</dt>
 <dd class="tag-source"><ul class="dummy">
 <li>
-<a href="https://github.com/thlorenz/procps/blob/master/index.js">index.js</a>
+<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js">index.js</a>
 <span>, </span>
-<a href="https://github.com/thlorenz/procps/blob/master/index.js#L52">lineno 52</a>
+<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L56">lineno 56</a>
 </li>
 </ul></dd>
 </dl>
@@ -112,68 +130,15 @@ Use them as a starting point to turn properties off selectively, i.e.:</p>
 <dt class="tag-source">Source:</dt>
 <dd class="tag-source"><ul class="dummy">
 <li>
-<a href="https://github.com/thlorenz/procps/blob/master/index.js">index.js</a>
+<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js">index.js</a>
 <span>, </span>
-<a href="https://github.com/thlorenz/procps/blob/master/index.js#L60">lineno 60</a>
+<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L64">lineno 64</a>
 </li>
 </ul></dd>
 </dl>
 </dd>
 </dl>
 <dl>
-<dt>
-<h4 class="name" id="meminfo"><span class="type-signature"></span>meminfo<span class="signature">(<span class="optional">unit</span>)</span><span class="type-signature"> &rarr; {Object}</span></h4>
-</dt>
-<dd>
-<div class="description">
-<p>A hybrid of <code>procps.meminfo</code> and <code>free</code>.</p>
-</div>
-<h5>Parameters:</h5>
-<table class="params">
-<thead>
-<tr>
-<th>Name</th>
-<th>Type</th>
-<th>Argument</th>
-<th class="last">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="name"><code>unit</code></td>
-<td class="type">
-<span class="param-type">string</span>
-</td>
-<td class="attributes">
-&lt;optional><br>
-</td>
-<td class="description last"><p><code>'b'|'k'|'m'|'g'</code> to return usage in Bytes|KB|MB|GB respectively</p></td>
-</tr>
-</tbody>
-</table>
-<dl class="details">
-<dt class="tag-source">Source:</dt>
-<dd class="tag-source"><ul class="dummy">
-<li>
-<a href="https://github.com/thlorenz/procps/blob/master/index.js">index.js</a>
-<span>, </span>
-<a href="https://github.com/thlorenz/procps/blob/master/index.js#L77">lineno 77</a>
-</li>
-</ul></dd>
-</dl>
-<h5>Returns:</h5>
-<div class="param-desc">
-<p>with properties indicating memory usage, like <code>mainTotal</code></p>
-</div>
-<dl>
-<dt>
-Type
-</dt>
-<dd>
-<span class="param-type">Object</span>
-</dd>
-</dl>
-</dd>
 <dt>
 <h4 class="name" id="readproctab"><span class="type-signature"></span>readproctab<span class="signature">(<span class="optional">flags_</span>)</span><span class="type-signature"> &rarr; {Array.&lt;Object>}</span></h4>
 </dt>
@@ -212,9 +177,9 @@ Type
 <dt class="tag-source">Source:</dt>
 <dd class="tag-source"><ul class="dummy">
 <li>
-<a href="https://github.com/thlorenz/procps/blob/master/index.js">index.js</a>
+<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js">index.js</a>
 <span>, </span>
-<a href="https://github.com/thlorenz/procps/blob/master/index.js#L31">lineno 31</a>
+<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L35">lineno 35</a>
 </li>
 </ul></dd>
 </dl>
@@ -231,6 +196,167 @@ Type
 </dd>
 </dl>
 </dd>
+<dt>
+<h4 class="name" id="sysinfo::getdiskstat"><span class="type-signature"></span>sysinfo::getdiskstat<span class="signature">()</span><span class="type-signature"> &rarr; {Object}</span></h4>
+</dt>
+<dd>
+<div class="description">
+<p>Gets statistics about disks/devices and partitions on the machine.</p>
+<h5>Example DiskStats</h5>
+<pre><code class="lang-js">{ disks:
+[ { diskName: 'sda',
+writes: 51770,
+weightedMilliSpentIO: 121633,
+reads: 14706,
+partitions: 2,
+milliWriting: 102280,
+milliSpentIO: 24633,
+milliReading: 19366,
+mergedWrites: 131130,
+mergedReads: 3164,
+inprogressIO: 0,
+writtenSectors: 1554100,
+readsSectors: 486100 },
+{ diskName: 'loop0',
+...
+partitions:
+[ { partitionName: 'sda1',
+requestedWrites: 1554100,
+writes: 51693,
+reads: 14553,
+parentDisk: 0,
+readsSectors: 483762 },
+{ partitionName: 'sda2',
+...
+]}</code></pre>
+</div>
+<dl class="details">
+<dt class="tag-source">Source:</dt>
+<dd class="tag-source"><ul class="dummy">
+<li>
+<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js">index.js</a>
+<span>, </span>
+<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L212">lineno 212</a>
+</li>
+</ul></dd>
+</dl>
+<h5>Returns:</h5>
+<div class="param-desc">
+<p>with <code>disks</code> array and <code>partitions</code> array</p>
+</div>
+<dl>
+<dt>
+Type
+</dt>
+<dd>
+<span class="param-type">Object</span>
+</dd>
+</dl>
+</dd>
+<dt>
+<h4 class="name" id="sysinfo::getstat"><span class="type-signature"></span>sysinfo::getstat<span class="signature">()</span><span class="type-signature"> &rarr; {Object}</span></h4>
+</dt>
+<dd>
+<div class="description">
+<p>Gets statistics about cpu, process and memory usage.
+<code>procps.getstat</code> used by various <code>vmstat</code> functions.</p>
+</div>
+<dl class="details">
+<dt class="tag-source">Source:</dt>
+<dd class="tag-source"><ul class="dummy">
+<li>
+<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js">index.js</a>
+<span>, </span>
+<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L145">lineno 145</a>
+</li>
+</ul></dd>
+</dl>
+<h5>Returns:</h5>
+<div class="param-desc">
+<p>with the following properties:</p>
+<ul>
+<li><strong>cpuUse</strong>:    non-nice user cpu ticks</li>
+<li><strong>cpuNic</strong>:    nice user cpu ticks</li>
+<li><strong>cpuSys</strong>:    system cpu ticks</li>
+<li><strong>cpuIdl</strong>:    idle cpu ticks</li>
+<li><strong>cpuIow</strong>:    IO-wait cpu ticks</li>
+<li><strong>cpuXxx</strong>:    IRQ cpu ticks</li>
+<li><strong>cpuYyy</strong>:    softirq cpu ticks</li>
+<li><strong>cpuZzz</strong>:    stolen irq ticks</li>
+<li><strong>pgpgin</strong>:    pages paged in</li>
+<li><strong>pgpgout</strong>:   pages paged out</li>
+<li><strong>pswpin</strong>:    pages swapped in</li>
+<li><strong>pswpout</strong>:   pages swapped out</li>
+<li><strong>intr</strong>:      interrupts</li>
+<li><strong>ctxt</strong>:      CPU context switches</li>
+<li><strong>running</strong>:   processes running</li>
+<li><strong>blocked</strong>:   processes blocked</li>
+<li><strong>btime</strong>:     boot time</li>
+<li><strong>processes</strong>: forks</li>
+</ul>
+</div>
+<dl>
+<dt>
+Type
+</dt>
+<dd>
+<span class="param-type">Object</span>
+</dd>
+</dl>
+</dd>
+<dt>
+<h4 class="name" id="sysinfo::meminfo"><span class="type-signature"></span>sysinfo::meminfo<span class="signature">(<span class="optional">unit</span>)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+</dt>
+<dd>
+<div class="description">
+<p>A hybrid of <code>procps.meminfo</code> and <code>free</code>.</p>
+</div>
+<h5>Parameters:</h5>
+<table class="params">
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Argument</th>
+<th class="last">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="name"><code>unit</code></td>
+<td class="type">
+<span class="param-type">string</span>
+</td>
+<td class="attributes">
+&lt;optional><br>
+</td>
+<td class="description last"><p><code>'b'|'k'|'m'|'g'</code> to return usage in Bytes|KB|MB|GB respectively</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="details">
+<dt class="tag-source">Source:</dt>
+<dd class="tag-source"><ul class="dummy">
+<li>
+<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js">index.js</a>
+<span>, </span>
+<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L86">lineno 86</a>
+</li>
+</ul></dd>
+</dl>
+<h5>Returns:</h5>
+<div class="param-desc">
+<p>with properties indicating memory usage, like <code>mainTotal</code></p>
+</div>
+<dl>
+<dt>
+Type
+</dt>
+<dd>
+<span class="param-type">Object</span>
+</dd>
+</dl>
+</dd>
 </dl>
 </article>
 </section>
@@ -239,16 +365,6 @@ Type
 *generated with [docme](https://github.com/thlorenz/docme)*
 </div>
 <!-- END docme generated API please keep comment here to allow auto update -->
-
-## Caveats
-
-Lots of procps forks to exist, some may be better maintained, namely [this one Denian, Fedora and openSUSE
-fork](https://gitorious.org/procps).
-
-I chose the version based on simplicity, size and ease of itegration, i.e. having to use `autoconf` is a deal breaker.
-
-However if you run into bugs and know of more up to date versions that fix them, I'd be interested to hear about it and
-even open to switching the underlying C lib used if enough benefits arise from that.
 
 ## LICENSE
 
