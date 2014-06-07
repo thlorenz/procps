@@ -137,51 +137,41 @@ NAN_METHOD(Sysinfo_Hertz) {
 }
 
 NAN_METHOD(Sysinfo_Getstat) {
-  jiff cpu_use[2], cpu_nic[2], cpu_sys[2], cpu_idl[2], cpu_iow[2], cpu_xxx[2], cpu_yyy[2], cpu_zzz[2];
-  unsigned long pgpgin[2], pgpgout[2], pswpin[2], pswpout[2];
-  unsigned int intr[2], ctxt[2];
+  jiff cpu_use, cpu_nic, cpu_sys, cpu_idl, cpu_iow, cpu_xxx, cpu_yyy, cpu_zzz;
+  unsigned long pgpgin, pgpgout, pswpin, pswpout;
+  unsigned int intr, ctxt;
   unsigned int running, blocked, btime, processes;
 
   NanScope();
 
   NanCallback *cb = new NanCallback(args[0].As<Function>());
 
-  getstat(cpu_use, cpu_nic, cpu_sys,cpu_idl, cpu_iow, cpu_xxx, cpu_yyy, cpu_zzz,
-	  pgpgin, pgpgout, pswpin, pswpout,
-	  intr, ctxt,
+	getstat(&cpu_use, &cpu_nic, &cpu_sys, &cpu_idl,
+		&cpu_iow, &cpu_xxx, &cpu_yyy, &cpu_zzz,
+		&pgpgin, &pgpgout, &pswpin, &pswpout,
+	  &intr, &ctxt,
 	  &running, &blocked,
 	  &btime, &processes);
 
+  // FIXME: currently converting 64-bit unigned long long to 32-bit
+  //        this works as long as the machine we are looking up hasn't been up for a long time
+  //        need to figure out how to correct this by correctly passing 64-bit number to JS layer
   #define X(field) NanNew<Uint32>((uint32_t) field)
   Local<Value> argv[] = {
-      X(cpu_use[0])
-    , X(cpu_use[1])
-    , X(cpu_nic[0])
-    , X(cpu_nic[1])
-    , X(cpu_sys[0])
-    , X(cpu_sys[1])
-    , X(cpu_idl[0])
-    , X(cpu_idl[1])
-    , X(cpu_iow[0])
-    , X(cpu_iow[1])
-    , X(cpu_xxx[0])
-    , X(cpu_xxx[1])
-    , X(cpu_yyy[0])
-    , X(cpu_yyy[1])
-    , X(cpu_zzz[0])
-    , X(cpu_zzz[1])
-    , X(pgpgin[0])
-    , X(pgpgin[1])
-    , X(pgpgout[0])
-    , X(pgpgout[1])
-    , X(pswpin[0])
-    , X(pswpin[1])
-    , X(pswpout[0])
-    , X(pswpout[1])
-    , X(intr[0])
-    , X(intr[1])
-    , X(ctxt[0])
-    , X(ctxt[1])
+      X(cpu_use)
+    , X(cpu_nic)
+    , X(cpu_sys)
+    , X(cpu_idl)
+    , X(cpu_iow)
+    , X(cpu_xxx)
+    , X(cpu_yyy)
+    , X(cpu_zzz)
+    , X(pgpgin)
+    , X(pgpgout)
+    , X(pswpin)
+    , X(pswpout)
+    , X(intr)
+    , X(ctxt)
     , X(running)
     , X(blocked)
     , X(btime)

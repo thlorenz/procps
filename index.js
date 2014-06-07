@@ -174,11 +174,9 @@ sysinfo.getstat = function getstat() {
   var args;
   procps.sysinfo_getstat(function () { args = arguments; });
 
-  var acc = {}
-    , idx;
+  var acc = {}, idx;
 
-  var pairs = [
-    'cpuUse'
+  [ 'cpuUse'
   , 'cpuNic'
   , 'cpuSys'
   , 'cpuIdl'
@@ -192,19 +190,14 @@ sysinfo.getstat = function getstat() {
   , 'pswpout'
   , 'intr'
   , 'ctxt'
-  ];
-
-  pairs.reduce(function (acc, k, idx) {
-    acc[k] = [ args[idx * 2], args[idx * 2 + 1] ];
+  , 'running'
+  , 'blocked'
+  , 'btime'
+  , 'processes'
+  ].reduce(function (acc, k, idx) {
+    acc[k] = args[idx];
     return acc;
   }, acc)
-
-  idx = pairs.length * 2;
-
-  acc.running   = args[idx++]; // processes running
-  acc.blocked   = args[idx++]; // processes blocked
-  acc.btime     = args[idx++]; // boot time
-  acc.processes = args[idx++]; // forks
 
   return acc;
 }
