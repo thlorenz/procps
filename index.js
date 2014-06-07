@@ -146,6 +146,8 @@ sysinfo.Hertz = procps.sysinfo_Hertz();
  * Gets statistics about cpu, process and memory usage.
  * `procps.getstat` used by various `vmstat` functions.
  *
+ * Includes btime therefore sysinfo.getbtime is not implemented separately.
+ *
  * @name sysinfo::getstat
  * @function
  * @return {Object} with the following properties:
@@ -168,7 +170,7 @@ sysinfo.Hertz = procps.sysinfo_Hertz();
  * - **blocked**:   processes blocked
  * - **btime**:     boot time
  * - **processes**: forks
- *  
+ *
  */
 sysinfo.getstat = function getstat() {
   var args;
@@ -231,7 +233,7 @@ sysinfo.getstat = function getstat() {
  *        reads: 14553,
  *        parentDisk: 0,
  *        readsSectors: 483762 },
- *      { partitionName: 'sda2', 
+ *      { partitionName: 'sda2',
  *      ...
  *    ]}
  *```
@@ -246,4 +248,46 @@ sysinfo.getdiskstat = function getdiskstat() {
   procps.sysinfo_getdiskstat(function () { args = arguments; });
 
   return { disks: args[0], partitions: args[1] };
+}
+
+sysinfo.uptime = function uptime() {
+  var args;
+  procps.sysinfo_uptime(function () { args = arguments; });
+
+  return { uptime: args[0], idle: args[1] };
+}
+
+/**
+ * Returns uptime since structured into years, months, etc. for easy logging.
+ * Very similar to `uptime -s` command.
+ *
+ * @name uptimeSince
+ * @function
+ * @return {Object} with the following properties:
+ *
+ * - **year**: Year	- 1900
+ * - **mon **: Month	[0-11]
+ * - **mday**: Day		[1-31]
+ * - **hour**: Hour	[0-23]
+ * - **min **: Minute	[0-59]
+ * - **sec **: Second	[0-60] (1 leap second)
+ * - **yday**: Day in year[0-365]
+ * - **wday**: Day of week	[0-6]
+ *
+ */
+sysinfo.uptimeSince = function uptimeSince() {
+  var args;
+  procps.sysinfo_uptimesince(function () { args = arguments; });
+  return {
+      year : args[0]
+    , mon  : args[1]
+    , mday : args[2]
+    , hour : args[3]
+    , min  : args[4]
+    , sec  : args[5]
+    , yday : args[6]
+    , wday : args[7]
+  }
+
+  return { uptime: args[0], idle: args[1] };
 }

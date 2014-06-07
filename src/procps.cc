@@ -5,13 +5,17 @@
 #include "proc/sysinfo.h"
 
 #include <cassert>
+#include <time.h>
+#include <sys/time.h>
 
 using v8::FunctionTemplate;
 using v8::Handle;
 using v8::Local;
 using v8::Object;
 using v8::String;
+using v8::Number;
 using v8::Integer;
+using v8::Int32;
 using v8::Uint32;
 using v8::Array;
 using v8::Value;
@@ -217,12 +221,66 @@ NAN_METHOD(Sysinfo_GetDiskStat) {
   NanReturnUndefined();
 }
 
+// see deps/procps/uptime.c for how to determine uptime since
+NAN_METHOD(Sysinfo_Uptime) {
+  NanScope();
+  NanCallback *cb = new NanCallback(args[0].As<Function>());
+
+	double uptime_secs, idle_secs;
+	uptime(&uptime_secs, &idle_secs);
+
+  Local<Value> argv[] = { NanNew<Number>(uptime_secs), NanNew<Number>(idle_secs) };
+  cb->Call(sizeof(argv) / sizeof(argv[0]), argv);
+
+  NanReturnUndefined();
+}
+
+NAN_METHOD(Sysinfo_UptimeSince) {
+  NanScope();
+  NanCallback *cb = new NanCallback(args[0].As<Function>());
+
+	double now, uptime_secs, idle_secs;
+	time_t up_since_secs;
+	struct tm *up_since;
+	struct timeval tim;
+
+	/* Get the current time and convert it to a double */
+	gettimeofday(&tim, NULL);
+	now = tim.tv_sec + (tim.tv_usec / 1000000.0);
+
+	/* Get the uptime and calculate when that was */
+	uptime(&uptime_secs, &idle_secs);
+	up_since_secs = (time_t) ((now - uptime_secs) + 0.5);
+
+	/* Show this */
+	up_since = localtime(&up_since_secs);
+
+  #define X(field) NanNew<Int32>((uint32_t) field)
+  Local<Value> argv[] = {
+      X(up_since->tm_year + 1900)
+    , X(up_since->tm_mon + 1)
+    , X(up_since->tm_mday)
+    , X(up_since->tm_hour)
+    , X(up_since->tm_min)
+    , X(up_since->tm_sec)
+    , X(up_since->tm_yday)
+    , X(up_since->tm_wday)
+  };
+  #undef X
+
+  cb->Call(sizeof(argv) / sizeof(argv[0]), argv);
+
+  NanReturnUndefined();
+}
+
 void init(Handle<Object> exports) {
   exports->Set(NanNew<String>("readproctab"), NanNew<FunctionTemplate>(Readproctab)->GetFunction());
   exports->Set(NanNew<String>("sysinfo_meminfo"), NanNew<FunctionTemplate>(Sysinfo_Meminfo)->GetFunction());
   exports->Set(NanNew<String>("sysinfo_Hertz"), NanNew<FunctionTemplate>(Sysinfo_Hertz)->GetFunction());
   exports->Set(NanNew<String>("sysinfo_getstat"), NanNew<FunctionTemplate>(Sysinfo_Getstat)->GetFunction());
   exports->Set(NanNew<String>("sysinfo_getdiskstat"), NanNew<FunctionTemplate>(Sysinfo_GetDiskStat)->GetFunction());
+  exports->Set(NanNew<String>("sysinfo_uptime"), NanNew<FunctionTemplate>(Sysinfo_Uptime)->GetFunction());
+  exports->Set(NanNew<String>("sysinfo_uptimesince"), NanNew<FunctionTemplate>(Sysinfo_UptimeSince)->GetFunction());
 }
 
 NODE_MODULE(procps, init)
