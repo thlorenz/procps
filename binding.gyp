@@ -20,7 +20,8 @@
         , 'deps/procps/proc/whattime.c'
         ],
       'include_dirs': [
-          './deps/procps/include'
+          './deps/procps/include/'
+        , './deps/procps/'
         , '<!(node -e "require(\'nan\')")' 
         ],
       # VERSION numbers are picked up by procps (see procps/proc/version.c)
