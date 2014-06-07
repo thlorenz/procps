@@ -18,12 +18,13 @@ Unixes with a `/proc` directory only. Tested on `arch linux` and `ubuntu`.
 - [Example](#example)
 - [API](#api)
     - [readproctab::flags](#readproctabflags)
-    - [readproctab::flagsFillAll](#readproctabflagsfillall)
     - [readproctab(flags_) → {Array.<Object>}](#readproctabflags_-→-arrayobject)
+    - [readproctab::flagsFillAll](#readproctabflagsfillall)
     - [sysinfo::getdiskstat() → {Object}](#sysinfogetdiskstat-→-object)
     - [sysinfo::getstat() → {Object}](#sysinfogetstat-→-object)
     - [sysinfo::meminfo(unit) → {Object}](#sysinfomeminfounit-→-object)
-- [Caveats](#caveats)
+    - [sysinfo::uptime() → {Object}](#sysinfouptime-→-object)
+    - [sysinfo::uptimeSince() → {Object}](#sysinfouptimesince-→-object)
 - [LICENSE](#license)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -236,7 +237,7 @@ readsSectors: 483762 },
 <li>
 <a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js">index.js</a>
 <span>, </span>
-<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L212">lineno 212</a>
+<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L206">lineno 206</a>
 </li>
 </ul></dd>
 </dl>
@@ -260,6 +261,7 @@ Type
 <div class="description">
 <p>Gets statistics about cpu, process and memory usage.
 <code>procps.getstat</code> used by various <code>vmstat</code> functions.</p>
+<p>Includes btime therefore sysinfo.getbtime is not implemented separately.</p>
 </div>
 <dl class="details">
 <dt class="tag-source">Source:</dt>
@@ -347,6 +349,83 @@ Type
 <h5>Returns:</h5>
 <div class="param-desc">
 <p>with properties indicating memory usage, like <code>mainTotal</code></p>
+</div>
+<dl>
+<dt>
+Type
+</dt>
+<dd>
+<span class="param-type">Object</span>
+</dd>
+</dl>
+</dd>
+<dt>
+<h4 class="name" id="sysinfo::uptime"><span class="type-signature"></span>sysinfo::uptime<span class="signature">()</span><span class="type-signature"> &rarr; {Object}</span></h4>
+</dt>
+<dd>
+<div class="description">
+<p>Returns uptime since structured into years, months, etc. for easy logging.
+Very similar to <code>uptime -s</code> command.</p>
+</div>
+<dl class="details">
+<dt class="tag-source">Source:</dt>
+<dd class="tag-source"><ul class="dummy">
+<li>
+<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js">index.js</a>
+<span>, </span>
+<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L252">lineno 252</a>
+</li>
+</ul></dd>
+</dl>
+<h5>Returns:</h5>
+<div class="param-desc">
+<p>with the following properties:</p>
+<ul>
+<li><strong>uptime</strong>: total uptime in seconds</li>
+<li><strong>idletime</strong>: total idletime in seconds</li>
+</ul>
+</div>
+<dl>
+<dt>
+Type
+</dt>
+<dd>
+<span class="param-type">Object</span>
+</dd>
+</dl>
+</dd>
+<dt>
+<h4 class="name" id="sysinfo::uptimeSince"><span class="type-signature"></span>sysinfo::uptimeSince<span class="signature">()</span><span class="type-signature"> &rarr; {Object}</span></h4>
+</dt>
+<dd>
+<div class="description">
+<p>Returns information about since when the machine is up.
+The result is structured into years, months, etc. for easy logging.</p>
+<p>Very similar to the <code>uptime -s</code> command.</p>
+</div>
+<dl class="details">
+<dt class="tag-source">Source:</dt>
+<dd class="tag-source"><ul class="dummy">
+<li>
+<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js">index.js</a>
+<span>, </span>
+<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L270">lineno 270</a>
+</li>
+</ul></dd>
+</dl>
+<h5>Returns:</h5>
+<div class="param-desc">
+<p>with the following properties:</p>
+<ul>
+<li><strong>year</strong>: Year    - 1900</li>
+<li><strong>mon </strong>: Month    [0-11]</li>
+<li><strong>mday</strong>: Day        [1-31]</li>
+<li><strong>hour</strong>: Hour    [0-23]</li>
+<li><strong>min </strong>: Minute    [0-59]</li>
+<li><strong>sec </strong>: Second    [0-60] (1 leap second)</li>
+<li><strong>yday</strong>: Day in year[0-365]</li>
+<li><strong>wday</strong>: Day of week    [0-6]</li>
+</ul>
 </div>
 <dl>
 <dt>

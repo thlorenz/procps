@@ -170,7 +170,6 @@ sysinfo.Hertz = procps.sysinfo_Hertz();
  * - **blocked**:   processes blocked
  * - **btime**:     boot time
  * - **processes**: forks
- *
  */
 sysinfo.getstat = function getstat() {
   var args;
@@ -250,6 +249,17 @@ sysinfo.getdiskstat = function getdiskstat() {
   return { disks: args[0], partitions: args[1] };
 }
 
+/**
+ * Returns uptime since structured into years, months, etc. for easy logging.
+ * Very similar to `uptime -s` command.
+ *
+ * @name sysinfo::uptime
+ * @function
+ * @return {Object} with the following properties:
+ *
+ *  - **uptime**: total uptime in seconds
+ *  - **idletime**: total idletime in seconds
+ */
 sysinfo.uptime = function uptime() {
   var args;
   procps.sysinfo_uptime(function () { args = arguments; });
@@ -258,10 +268,12 @@ sysinfo.uptime = function uptime() {
 }
 
 /**
- * Returns uptime since structured into years, months, etc. for easy logging.
- * Very similar to `uptime -s` command.
+ * Returns information about since when the machine is up.
+ * The result is structured into years, months, etc. for easy logging.
  *
- * @name uptimeSince
+ * Very similar to the `uptime -s` command.
+ *
+ * @name sysinfo::uptimeSince
  * @function
  * @return {Object} with the following properties:
  *
@@ -273,7 +285,6 @@ sysinfo.uptime = function uptime() {
  * - **sec **: Second	[0-60] (1 leap second)
  * - **yday**: Day in year[0-365]
  * - **wday**: Day of week	[0-6]
- *
  */
 sysinfo.uptimeSince = function uptimeSince() {
   var args;
