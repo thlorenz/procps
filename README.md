@@ -18,10 +18,11 @@ Unixes with a `/proc` directory only. Tested on `arch linux` and `ubuntu`.
 - [Example](#example)
 - [API](#api)
     - [readproctab::flags](#readproctabflags)
-    - [readproctab(flags_) → {Array.<Object>}](#readproctabflags_-→-arrayobject)
     - [readproctab::flagsFillAll](#readproctabflagsfillall)
+    - [readproctab(flags_) → {Array.<Object>}](#readproctabflags_-→-arrayobject)
     - [sysinfo::getdiskstat() → {Object}](#sysinfogetdiskstat-→-object)
     - [sysinfo::getstat() → {Object}](#sysinfogetstat-→-object)
+    - [sysinfo::loadavg() → {Array.<number>}](#sysinfoloadavg-→-arraynumber)
     - [sysinfo::meminfo(unit) → {Object}](#sysinfomeminfounit-→-object)
     - [sysinfo::uptime() → {Object}](#sysinfouptime-→-object)
     - [sysinfo::uptimeSince() → {Object}](#sysinfouptimesince-→-object)
@@ -303,6 +304,39 @@ Type
 </dt>
 <dd>
 <span class="param-type">Object</span>
+</dd>
+</dl>
+</dd>
+<dt>
+<h4 class="name" id="sysinfo::loadavg"><span class="type-signature"></span>sysinfo::loadavg<span class="signature">()</span><span class="type-signature"> &rarr; {Array.&lt;number>}</span></h4>
+</dt>
+<dd>
+<div class="description">
+<p>Returns load average figures giving the number of jobs in the run queue (state R) or waiting for disk I/O (state D) averaged
+over 1, 5 and 15 minutes. </p>
+<p>They are the same as the load average numbers given by uptime(1) and other programs.</p>
+<p><code>/proc/loadavg</code></p>
+</div>
+<dl class="details">
+<dt class="tag-source">Source:</dt>
+<dd class="tag-source"><ul class="dummy">
+<li>
+<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js">index.js</a>
+<span>, </span>
+<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L306">lineno 306</a>
+</li>
+</ul></dd>
+</dl>
+<h5>Returns:</h5>
+<div class="param-desc">
+<p>three numbers representing loadaverages over 1, 5 and 15 minutes respectively</p>
+</div>
+<dl>
+<dt>
+Type
+</dt>
+<dd>
+<span class="param-type">Array.&lt;number></span>
 </dd>
 </dl>
 </dd>

@@ -302,3 +302,22 @@ sysinfo.uptimeSince = function uptimeSince() {
 
   return { uptime: args[0], idle: args[1] };
 }
+
+/**
+ * Returns load average figures giving the number of jobs in the run queue (state R) or waiting for disk I/O (state D) averaged
+ * over 1, 5 and 15 minutes. 
+ *
+ * They are the same as the load average numbers given by uptime(1) and other programs.
+ *
+ * `/proc/loadavg`
+ *
+ * @name sysinfo::loadavg
+ * @function
+ * @return {Array<number>} three numbers representing loadaverages over 1, 5 and 15 minutes respectively
+ */
+sysinfo.loadavg = function () {
+  var args;
+  procps.sysinfo_loadavg(function () { args = Array.prototype.slice.call(arguments); });
+
+  return args;
+}

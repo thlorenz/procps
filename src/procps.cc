@@ -273,6 +273,21 @@ NAN_METHOD(Sysinfo_UptimeSince) {
   NanReturnUndefined();
 }
 
+NAN_METHOD(Sysinfo_Loadavg) {
+  NanScope();
+  NanCallback *cb = new NanCallback(args[0].As<Function>());
+
+  double av[3];
+  loadavg(&av[0], &av[1], &av[2]);
+
+  #define X(field) NanNew<Number>(field)
+  Local<Value> argv[] = { X(av[0]), X(av[1]), X(av[2]) };
+  #undef X
+  cb->Call(sizeof(argv) / sizeof(argv[0]), argv);
+
+  NanReturnUndefined();
+}
+
 void init(Handle<Object> exports) {
   exports->Set(NanNew<String>("readproctab"), NanNew<FunctionTemplate>(Readproctab)->GetFunction());
   exports->Set(NanNew<String>("sysinfo_meminfo"), NanNew<FunctionTemplate>(Sysinfo_Meminfo)->GetFunction());
@@ -281,6 +296,7 @@ void init(Handle<Object> exports) {
   exports->Set(NanNew<String>("sysinfo_getdiskstat"), NanNew<FunctionTemplate>(Sysinfo_GetDiskStat)->GetFunction());
   exports->Set(NanNew<String>("sysinfo_uptime"), NanNew<FunctionTemplate>(Sysinfo_Uptime)->GetFunction());
   exports->Set(NanNew<String>("sysinfo_uptimesince"), NanNew<FunctionTemplate>(Sysinfo_UptimeSince)->GetFunction());
+  exports->Set(NanNew<String>("sysinfo_loadavg"), NanNew<FunctionTemplate>(Sysinfo_Loadavg)->GetFunction());
 }
 
 NODE_MODULE(procps, init)
