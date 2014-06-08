@@ -324,7 +324,7 @@ sysinfo.uptimeString = function (humanReadable) {
  *
  * They are the same as the load average numbers given by uptime(1) and other programs.
  *
- * `/proc/loadavg`
+ * Source: `/proc/loadavg`
  *
  * @name sysinfo::loadavg
  * @function
@@ -335,4 +335,25 @@ sysinfo.loadavg = function () {
   procps.sysinfo_loadavg(function () { args = Array.prototype.slice.call(arguments); });
 
   return args;
+}
+
+/** 
+ * Returns the number of digits in `PID_MAX`.
+ *
+ * `PID_MAX` specifies the value at which PIDs wrap around (i.e., the value in this file is one greater than the maximum PID). 
+ * The default value for this file, 32768, results in the same range of PIDs as on earlier kernels. 
+ *
+ * On **32-bit platforms**, `32768` is the maximum value for pid_max. 
+ * On **64-bit systems**, pid_max can be set to any value up to `2^22` (`PID_MAX_LIMIT`, approximately 4 million).
+ *
+ * Source: `/proc/sys/kernel/pid_max`
+ *
+ * @name sysinfo::getPidDigits
+ * @function
+ * @return {number} the number of digits in `PID_MAX`
+ */
+sysinfo.getPidDigits = function () {
+  var args;
+  procps.sysinfo_getpiddigits(function () { args = arguments; });
+  return args[0];
 }

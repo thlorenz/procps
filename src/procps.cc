@@ -305,6 +305,17 @@ NAN_METHOD(Sysinfo_Loadavg) {
   NanReturnUndefined();
 }
 
+NAN_METHOD(Sysinfo_GetPidDigits) {
+  NanScope();
+  NanCallback *cb = new NanCallback(args[0].As<Function>());
+
+  unsigned digits = get_pid_digits();
+  Local<Value> argv[] = { NanNew<Uint32>(digits) };
+  cb->Call(1, argv);
+
+  NanReturnUndefined();
+}
+
 void init(Handle<Object> exports) {
   exports->Set(NanNew<String>("readproctab"), NanNew<FunctionTemplate>(Readproctab)->GetFunction());
   exports->Set(NanNew<String>("sysinfo_meminfo"), NanNew<FunctionTemplate>(Sysinfo_Meminfo)->GetFunction());
@@ -315,6 +326,7 @@ void init(Handle<Object> exports) {
   exports->Set(NanNew<String>("sysinfo_uptimesince"), NanNew<FunctionTemplate>(Sysinfo_UptimeSince)->GetFunction());
   exports->Set(NanNew<String>("sysinfo_uptimestring"), NanNew<FunctionTemplate>(Sysinfo_UptimeString)->GetFunction());
   exports->Set(NanNew<String>("sysinfo_loadavg"), NanNew<FunctionTemplate>(Sysinfo_Loadavg)->GetFunction());
+  exports->Set(NanNew<String>("sysinfo_getpiddigits"), NanNew<FunctionTemplate>(Sysinfo_GetPidDigits)->GetFunction());
 }
 
 NODE_MODULE(procps, init)

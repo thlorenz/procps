@@ -21,6 +21,7 @@ Unixes with a `/proc` directory only. Tested on `arch linux` and `ubuntu`.
     - [readproctab::flagsFillAll](#readproctabflagsfillall)
     - [readproctab(flags_) → {Array.<Object>}](#readproctabflags_-→-arrayobject)
     - [sysinfo::getdiskstat() → {Object}](#sysinfogetdiskstat-→-object)
+    - [sysinfo::getPidDigits() → {number}](#sysinfogetpiddigits-→-number)
     - [sysinfo::getstat() → {Object}](#sysinfogetstat-→-object)
     - [sysinfo::loadavg() → {Array.<number>}](#sysinfoloadavg-→-arraynumber)
     - [sysinfo::meminfo(unit) → {Object}](#sysinfomeminfounit-→-object)
@@ -257,6 +258,41 @@ Type
 </dl>
 </dd>
 <dt>
+<h4 class="name" id="sysinfo::getPidDigits"><span class="type-signature"></span>sysinfo::getPidDigits<span class="signature">()</span><span class="type-signature"> &rarr; {number}</span></h4>
+</dt>
+<dd>
+<div class="description">
+<p>Returns the number of digits in <code>PID_MAX</code>.</p>
+<p><code>PID_MAX</code> specifies the value at which PIDs wrap around (i.e., the value in this file is one greater than the maximum PID).
+The default value for this file, 32768, results in the same range of PIDs as on earlier kernels. </p>
+<p>On <strong>32-bit platforms</strong>, <code>32768</code> is the maximum value for pid_max.
+On <strong>64-bit systems</strong>, pid_max can be set to any value up to <code>2^22</code> (<code>PID_MAX_LIMIT</code>, approximately 4 million).</p>
+<p>Source: <code>/proc/sys/kernel/pid_max</code></p>
+</div>
+<dl class="details">
+<dt class="tag-source">Source:</dt>
+<dd class="tag-source"><ul class="dummy">
+<li>
+<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js">index.js</a>
+<span>, </span>
+<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L340">lineno 340</a>
+</li>
+</ul></dd>
+</dl>
+<h5>Returns:</h5>
+<div class="param-desc">
+<p>the number of digits in <code>PID_MAX</code></p>
+</div>
+<dl>
+<dt>
+Type
+</dt>
+<dd>
+<span class="param-type">number</span>
+</dd>
+</dl>
+</dd>
+<dt>
 <h4 class="name" id="sysinfo::getstat"><span class="type-signature"></span>sysinfo::getstat<span class="signature">()</span><span class="type-signature"> &rarr; {Object}</span></h4>
 </dt>
 <dd>
@@ -316,7 +352,7 @@ Type
 <p>Returns load average figures giving the number of jobs in the run queue (state R) or waiting for disk I/O (state D) averaged
 over 1, 5 and 15 minutes. </p>
 <p>They are the same as the load average numbers given by uptime(1) and other programs.</p>
-<p><code>/proc/loadavg</code></p>
+<p>Source: <code>/proc/loadavg</code></p>
 </div>
 <dl class="details">
 <dt class="tag-source">Source:</dt>
