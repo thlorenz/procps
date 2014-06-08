@@ -16,7 +16,8 @@
     "clean": "rm -rf ./build && cd ./deps/procps && make clean",
     "restart": "npm run clean && npm run install",
     "dox": "doxygen ./deps/procps.doxygen",
-    "dox-proc": "doxygen ./deps/procps.proc.doxygen"
+    "dox-proc": "doxygen ./deps/procps.proc.doxygen",
+    "readme": "docme README.md && doctoc README.md"
   },
   "repository": {
     "type": "git",
@@ -38,7 +39,9 @@
   "homepage": "https://github.com/thlorenz/procps",
   "devDependencies": {
     "nave": "~0.4.5",
-    "tap": "~0.4.9"
+    "tap": "~0.4.9",
+    "docme": "~0.2.1",
+    "doctoc": "~0.7.1"
   },
   "dependencies": {
     "nan": "~1.1.0"

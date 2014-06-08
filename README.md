@@ -26,6 +26,7 @@ Unixes with a `/proc` directory only. Tested on `arch linux` and `ubuntu`.
     - [sysinfo::meminfo(unit) → {Object}](#sysinfomeminfounit-→-object)
     - [sysinfo::uptime() → {Object}](#sysinfouptime-→-object)
     - [sysinfo::uptimeSince() → {Object}](#sysinfouptimesince-→-object)
+    - [sysinfo::uptimeString(humanReadable) → {String}](#sysinfouptimestringhumanreadable-→-string)
 - [LICENSE](#license)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -323,7 +324,7 @@ over 1, 5 and 15 minutes. </p>
 <li>
 <a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js">index.js</a>
 <span>, </span>
-<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L306">lineno 306</a>
+<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L321">lineno 321</a>
 </li>
 </ul></dd>
 </dl>
@@ -467,6 +468,55 @@ Type
 </dt>
 <dd>
 <span class="param-type">Object</span>
+</dd>
+</dl>
+</dd>
+<dt>
+<h4 class="name" id="sysinfo::uptimeString"><span class="type-signature"></span>sysinfo::uptimeString<span class="signature">(humanReadable)</span><span class="type-signature"> &rarr; {String}</span></h4>
+</dt>
+<dd>
+<div class="description">
+<p>Convenience function that provides information about number and users, uptime and loadavg.</p>
+</div>
+<h5>Parameters:</h5>
+<table class="params">
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th class="last">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="name"><code>humanReadable</code></td>
+<td class="type">
+<span class="param-type">boolean</span>
+</td>
+<td class="description last"><p>if <code>true</code> only uptime is included in human readable format, otherwise all information is included.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="details">
+<dt class="tag-source">Source:</dt>
+<dd class="tag-source"><ul class="dummy">
+<li>
+<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js">index.js</a>
+<span>, </span>
+<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L306">lineno 306</a>
+</li>
+</ul></dd>
+</dl>
+<h5>Returns:</h5>
+<div class="param-desc">
+<p>with uptime information</p>
+</div>
+<dl>
+<dt>
+Type
+</dt>
+<dd>
+<span class="param-type">String</span>
 </dd>
 </dl>
 </dd>

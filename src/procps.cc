@@ -3,6 +3,7 @@
 
 #include "procps.h"
 #include "proc/sysinfo.h"
+#include "proc/whattime.h"
 
 #include <cassert>
 #include <time.h>
@@ -273,6 +274,22 @@ NAN_METHOD(Sysinfo_UptimeSince) {
   NanReturnUndefined();
 }
 
+NAN_METHOD(Sysinfo_UptimeString) {
+  NanScope();
+
+  Local<Integer> human_readable = args[0].As<Integer>();
+  assert(human_readable->IsUint32());
+
+  NanCallback *cb = new NanCallback(args[1].As<Function>());
+
+  char* s = sprint_uptime(human_readable->Value());
+
+  Local<Value> argv[] = { NanNew<String>(s) };
+  cb->Call(1, argv);
+
+  NanReturnUndefined();
+}
+
 NAN_METHOD(Sysinfo_Loadavg) {
   NanScope();
   NanCallback *cb = new NanCallback(args[0].As<Function>());
@@ -296,6 +313,7 @@ void init(Handle<Object> exports) {
   exports->Set(NanNew<String>("sysinfo_getdiskstat"), NanNew<FunctionTemplate>(Sysinfo_GetDiskStat)->GetFunction());
   exports->Set(NanNew<String>("sysinfo_uptime"), NanNew<FunctionTemplate>(Sysinfo_Uptime)->GetFunction());
   exports->Set(NanNew<String>("sysinfo_uptimesince"), NanNew<FunctionTemplate>(Sysinfo_UptimeSince)->GetFunction());
+  exports->Set(NanNew<String>("sysinfo_uptimestring"), NanNew<FunctionTemplate>(Sysinfo_UptimeString)->GetFunction());
   exports->Set(NanNew<String>("sysinfo_loadavg"), NanNew<FunctionTemplate>(Sysinfo_Loadavg)->GetFunction());
 }
 

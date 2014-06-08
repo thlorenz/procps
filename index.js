@@ -304,6 +304,21 @@ sysinfo.uptimeSince = function uptimeSince() {
 }
 
 /**
+ * Convenience function that provides information about number and users, uptime and loadavg.
+ * 
+ * @name sysinfo::uptimeString
+ * @function
+ * @param {boolean} humanReadable  if `true` only uptime is included in human readable format, otherwise all information is included.
+ * @return {String} with uptime information
+ */
+sysinfo.uptimeString = function (humanReadable) {
+  var args;
+  var readable = humanReadable ? 1 : 0;
+  procps.sysinfo_uptimestring(readable, function () { args = arguments; });
+  return args[0];
+}
+
+/**
  * Returns load average figures giving the number of jobs in the run queue (state R) or waiting for disk I/O (state D) averaged
  * over 1, 5 and 15 minutes. 
  *
