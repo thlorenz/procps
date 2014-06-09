@@ -29,6 +29,7 @@ Unixes with a `/proc` directory only. Tested on `arch linux` and `ubuntu`.
     - [sysinfo::uptime() → {Object}](#sysinfouptime-→-object)
     - [sysinfo::uptimeSince() → {Object}](#sysinfouptimesince-→-object)
     - [sysinfo::uptimeString(humanReadable) → {String}](#sysinfouptimestringhumanreadable-→-string)
+    - [vminfo() → {Object}](#vminfo-→-object)
 - [LICENSE](#license)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -241,7 +242,7 @@ readsSectors: 483762 },
 <li>
 <a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js">index.js</a>
 <span>, </span>
-<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L206">lineno 206</a>
+<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L273">lineno 273</a>
 </li>
 </ul></dd>
 </dl>
@@ -265,7 +266,7 @@ Type
 <div class="description">
 <p>Returns the number of digits in <code>PID_MAX</code>.</p>
 <p><code>PID_MAX</code> specifies the value at which PIDs wrap around (i.e., the value in this file is one greater than the maximum PID).
-The default value for this file, 32768, results in the same range of PIDs as on earlier kernels. </p>
+The default value for this file, 32768, results in the same range of PIDs as on earlier kernels.</p>
 <p>On <strong>32-bit platforms</strong>, <code>32768</code> is the maximum value for pid_max.
 On <strong>64-bit systems</strong>, pid_max can be set to any value up to <code>2^22</code> (<code>PID_MAX_LIMIT</code>, approximately 4 million).</p>
 <p>Source: <code>/proc/sys/kernel/pid_max</code></p>
@@ -276,7 +277,7 @@ On <strong>64-bit systems</strong>, pid_max can be set to any value up to <code>
 <li>
 <a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js">index.js</a>
 <span>, </span>
-<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L338">lineno 338</a>
+<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L405">lineno 405</a>
 </li>
 </ul></dd>
 </dl>
@@ -299,7 +300,7 @@ Type
 <dd>
 <div class="description">
 <p>Returns kernel slab allocator statistics.
-Frequently used objects in the Linux kernel (buffer heads, inodes, dentries, * etc.)  have their own cache.  </p>
+Frequently used objects in the Linux kernel (buffer heads, inodes, dentries, * etc.)  have their own cache.</p>
 <p>For each slab cache, the cache name, the number of currently active objects,
 the total number of available objects, the size of each object in bytes, the
 number of pages with at least one active object, the total number of
@@ -316,7 +317,7 @@ It is therefore recommended to use this only when writing a script, <strong>plea
 <li>
 <a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js">index.js</a>
 <span>, </span>
-<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L365">lineno 365</a>
+<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L426">lineno 426</a>
 </li>
 </ul></dd>
 </dl>
@@ -355,7 +356,7 @@ Type
 <li>
 <a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js">index.js</a>
 <span>, </span>
-<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L145">lineno 145</a>
+<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L212">lineno 212</a>
 </li>
 </ul></dd>
 </dl>
@@ -363,24 +364,24 @@ Type
 <div class="param-desc">
 <p>with the following properties:</p>
 <ul>
-<li><strong>cpuUse</strong>:    non-nice user cpu ticks</li>
-<li><strong>cpuNic</strong>:    nice user cpu ticks</li>
-<li><strong>cpuSys</strong>:    system cpu ticks</li>
-<li><strong>cpuIdl</strong>:    idle cpu ticks</li>
-<li><strong>cpuIow</strong>:    IO-wait cpu ticks</li>
-<li><strong>cpuXxx</strong>:    IRQ cpu ticks</li>
-<li><strong>cpuYyy</strong>:    softirq cpu ticks</li>
-<li><strong>cpuZzz</strong>:    stolen irq ticks</li>
-<li><strong>pgpgin</strong>:    pages paged in</li>
-<li><strong>pgpgout</strong>:   pages paged out</li>
-<li><strong>pswpin</strong>:    pages swapped in</li>
-<li><strong>pswpout</strong>:   pages swapped out</li>
-<li><strong>intr</strong>:      interrupts</li>
-<li><strong>ctxt</strong>:      CPU context switches</li>
-<li><strong>running</strong>:   processes running</li>
-<li><strong>blocked</strong>:   processes blocked</li>
-<li><strong>btime</strong>:     boot time</li>
-<li><strong>processes</strong>: forks</li>
+<li><strong>cpuUse</strong>    : non-nice user cpu ticks</li>
+<li><strong>cpuNic</strong>    : nice user cpu ticks</li>
+<li><strong>cpuSys</strong>    : system cpu ticks</li>
+<li><strong>cpuIdl</strong>    : idle cpu ticks</li>
+<li><strong>cpuIow</strong>    : IO-wait cpu ticks</li>
+<li><strong>cpuXxx</strong>    : IRQ cpu ticks</li>
+<li><strong>cpuYyy</strong>    : softirq cpu ticks</li>
+<li><strong>cpuZzz</strong>    : stolen irq ticks</li>
+<li><strong>pgpgin</strong>    : pages paged in</li>
+<li><strong>pgpgout</strong>   : pages paged out</li>
+<li><strong>pswpin</strong>    : pages swapped in</li>
+<li><strong>pswpout</strong>   : pages swapped out</li>
+<li><strong>intr</strong>      : interrupts</li>
+<li><strong>ctxt</strong>      : CPU context switches</li>
+<li><strong>running</strong>   : processes running</li>
+<li><strong>blocked</strong>   : processes blocked</li>
+<li><strong>btime</strong>     : boot time</li>
+<li><strong>processes</strong> : forks</li>
 </ul>
 </div>
 <dl>
@@ -398,7 +399,7 @@ Type
 <dd>
 <div class="description">
 <p>Returns load average figures giving the number of jobs in the run queue (state R) or waiting for disk I/O (state D) averaged
-over 1, 5 and 15 minutes. </p>
+over 1, 5 and 15 minutes.</p>
 <p>They are the same as the load average numbers given by uptime(1) and other programs.</p>
 <p>Source: <code>/proc/loadavg</code></p>
 </div>
@@ -408,7 +409,7 @@ over 1, 5 and 15 minutes. </p>
 <li>
 <a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js">index.js</a>
 <span>, </span>
-<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L319">lineno 319</a>
+<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L386">lineno 386</a>
 </li>
 </ul></dd>
 </dl>
@@ -492,7 +493,7 @@ Very similar to <code>uptime -s</code> command.</p>
 <li>
 <a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js">index.js</a>
 <span>, </span>
-<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L252">lineno 252</a>
+<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L319">lineno 319</a>
 </li>
 </ul></dd>
 </dl>
@@ -528,7 +529,7 @@ The result is structured into years, months, etc. for easy logging.</p>
 <li>
 <a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js">index.js</a>
 <span>, </span>
-<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L270">lineno 270</a>
+<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L337">lineno 337</a>
 </li>
 </ul></dd>
 </dl>
@@ -537,7 +538,7 @@ The result is structured into years, months, etc. for easy logging.</p>
 <p>with the following properties:</p>
 <ul>
 <li><strong>year</strong>: Year    - 1900</li>
-<li><strong>mon </strong>: Month    [0-11]</li>
+<li><strong>mon</strong> : Month    [0-11]</li>
 <li><strong>mday</strong>: Day        [1-31]</li>
 <li><strong>hour</strong>: Hour    [0-23]</li>
 <li><strong>min </strong>: Minute    [0-59]</li>
@@ -587,7 +588,7 @@ Type
 <li>
 <a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js">index.js</a>
 <span>, </span>
-<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L304">lineno 304</a>
+<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L371">lineno 371</a>
 </li>
 </ul></dd>
 </dl>
@@ -601,6 +602,62 @@ Type
 </dt>
 <dd>
 <span class="param-type">String</span>
+</dd>
+</dl>
+</dd>
+<dt>
+<h4 class="name" id="vminfo"><span class="type-signature"></span>vminfo<span class="signature">()</span><span class="type-signature"> &rarr; {Object}</span></h4>
+</dt>
+<dd>
+<div class="description">
+<p>Returns various virtual memory statistics.</p>
+<p>Source: <code>/proc/vmstat</code></p>
+</div>
+<dl class="details">
+<dt class="tag-source">Source:</dt>
+<dd class="tag-source"><ul class="dummy">
+<li>
+<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js">index.js</a>
+<span>, </span>
+<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L133">lineno 133</a>
+</li>
+</ul></dd>
+</dl>
+<h5>Returns:</h5>
+<div class="param-desc">
+<p>with the following properties:</p>
+<ul>
+<li><strong>nrDirty</strong>          : dirty writable pages</li>
+<li><strong>nrWriteback</strong>      : pages under writeback</li>
+<li><strong>nrPagecache</strong>      : pages in pagecache -- gone in 2.5.66+ kernels</li>
+<li><strong>nrPageTablePages</strong> : pages used for pagetables</li>
+<li><strong>nrReverseMaps</strong>    : includes PageDirect</li>
+<li><strong>nrMapped</strong>         : mapped into pagetables</li>
+<li><strong>nrSlab</strong>           : in slab</li>
+<li><strong>pgpgin</strong>           : kB disk reads  (same as 1st num on /proc/stat page line)</li>
+<li><strong>pgpgout</strong>          : kB disk writes (same as 2nd num on /proc/stat page line)</li>
+<li><strong>pswpin</strong>           : swap reads     (same as 1st num on /proc/stat swap line)</li>
+<li><strong>pswpout</strong>          : swap writes    (same as 2nd num on /proc/stat swap line)</li>
+<li><strong>pgalloc</strong>          : page allocations</li>
+<li><strong>pgfree</strong>           : page freeings</li>
+<li><strong>pgactivate</strong>       : pages moved inactive -&gt; active</li>
+<li><strong>pgdeactivate</strong>     : pages moved active -&gt; inactive</li>
+<li><strong>pgfault</strong>          : total faults (major+minor)</li>
+<li><strong>pgmajfault</strong>       : major faults</li>
+<li><strong>pgscan</strong>           : pages scanned by page reclaim</li>
+<li><strong>pgrefill</strong>         : inspected by refill_inactive_zone</li>
+<li><strong>pgsteal</strong>          : total pages reclaimed</li>
+<li><strong>kswapdSteal</strong>      : pages reclaimed by kswapd</li>
+<li><strong>pageoutrun</strong>       : times kswapd ran page reclaim</li>
+<li><strong>allocstall</strong>       : times a page allocator ran direct reclaim</li>
+</ul>
+</div>
+<dl>
+<dt>
+Type
+</dt>
+<dd>
+<span class="param-type">Object</span>
 </dd>
 </dl>
 </dd>

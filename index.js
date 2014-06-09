@@ -130,6 +130,73 @@ sysinfo.meminfo = function meminfo (unit) {
     }, {})
 }
 
+/**
+ * Returns various virtual memory statistics.
+ *
+ * Source: `/proc/vmstat`
+ *
+ * @name vminfo
+ * @function
+ * @return {Object} with the following properties:
+ *
+ *  - **nrDirty**          : dirty writable pages
+ *  - **nrWriteback**      : pages under writeback
+ *  - **nrPagecache**      : pages in pagecache -- gone in 2.5.66+ kernels
+ *  - **nrPageTablePages** : pages used for pagetables
+ *  - **nrReverseMaps**    : includes PageDirect
+ *  - **nrMapped**         : mapped into pagetables
+ *  - **nrSlab**           : in slab
+ *  - **pgpgin**           : kB disk reads  (same as 1st num on /proc/stat page line)
+ *  - **pgpgout**          : kB disk writes (same as 2nd num on /proc/stat page line)
+ *  - **pswpin**           : swap reads     (same as 1st num on /proc/stat swap line)
+ *  - **pswpout**          : swap writes    (same as 2nd num on /proc/stat swap line)
+ *  - **pgalloc**          : page allocations
+ *  - **pgfree**           : page freeings
+ *  - **pgactivate**       : pages moved inactive -> active
+ *  - **pgdeactivate**     : pages moved active -> inactive
+ *  - **pgfault**          : total faults (major+minor)
+ *  - **pgmajfault**       : major faults
+ *  - **pgscan**           : pages scanned by page reclaim
+ *  - **pgrefill**         : inspected by refill_inactive_zone
+ *  - **pgsteal**          : total pages reclaimed
+ *  - **kswapdSteal**      : pages reclaimed by kswapd
+ *  - **pageoutrun**       : times kswapd ran page reclaim
+ *  - **allocstall**       : times a page allocator ran direct reclaim
+ */
+sysinfo.vminfo = function () {
+  var args;
+  procps.sysinfo_vminfo(function () { args = arguments; });
+
+  return [
+    'nrDirty'
+  , 'nrWriteback'
+  , 'nrPagecache'
+  , 'nrPageTablePages'
+  , 'nrReverseMaps'
+  , 'nrMapped'
+  , 'nrSlab'
+  , 'pgpgin'
+  , 'pgpgout'
+  , 'pswpin'
+  , 'pswpout'
+  , 'pgalloc'
+  , 'pgfree'
+  , 'pgactivate'
+  , 'pgdeactivate'
+  , 'pgfault'
+  , 'pgmajfault'
+  , 'pgscan'
+  , 'pgrefill'
+  , 'pgsteal'
+  , 'kswapdSteal'
+  , 'pageoutrun'
+  , 'allocstall'
+  ].reduce(function (acc, k, idx) {
+      acc[k] = args[idx];
+      return acc;
+    }, {})
+}
+
 function inspect(obj, depth) {
   console.error(require('util').inspect(obj, false, depth || 5, true));
 }
@@ -152,24 +219,24 @@ sysinfo.Hertz = procps.sysinfo_Hertz();
  * @function
  * @return {Object} with the following properties:
  *
- * - **cpuUse**:    non-nice user cpu ticks
- * - **cpuNic**:    nice user cpu ticks
- * - **cpuSys**:    system cpu ticks
- * - **cpuIdl**:    idle cpu ticks
- * - **cpuIow**:    IO-wait cpu ticks
- * - **cpuXxx**:    IRQ cpu ticks
- * - **cpuYyy**:    softirq cpu ticks
- * - **cpuZzz**:    stolen irq ticks
- * - **pgpgin**:    pages paged in
- * - **pgpgout**:   pages paged out
- * - **pswpin**:    pages swapped in
- * - **pswpout**:   pages swapped out
- * - **intr**:      interrupts
- * - **ctxt**:      CPU context switches
- * - **running**:   processes running
- * - **blocked**:   processes blocked
- * - **btime**:     boot time
- * - **processes**: forks
+ * - **cpuUse**    : non-nice user cpu ticks
+ * - **cpuNic**    : nice user cpu ticks
+ * - **cpuSys**    : system cpu ticks
+ * - **cpuIdl**    : idle cpu ticks
+ * - **cpuIow**    : IO-wait cpu ticks
+ * - **cpuXxx**    : IRQ cpu ticks
+ * - **cpuYyy**    : softirq cpu ticks
+ * - **cpuZzz**    : stolen irq ticks
+ * - **pgpgin**    : pages paged in
+ * - **pgpgout**   : pages paged out
+ * - **pswpin**    : pages swapped in
+ * - **pswpout**   : pages swapped out
+ * - **intr**      : interrupts
+ * - **ctxt**      : CPU context switches
+ * - **running**   : processes running
+ * - **blocked**   : processes blocked
+ * - **btime**     : boot time
+ * - **processes** : forks
  */
 sysinfo.getstat = function getstat() {
   var args;
@@ -278,7 +345,7 @@ sysinfo.uptime = function uptime() {
  * @return {Object} with the following properties:
  *
  * - **year**: Year	- 1900
- * - **mon **: Month	[0-11]
+ * - **mon** : Month	[0-11]
  * - **mday**: Day		[1-31]
  * - **hour**: Hour	[0-23]
  * - **min **: Minute	[0-59]
@@ -303,7 +370,7 @@ sysinfo.uptimeSince = function uptimeSince() {
 
 /**
  * Convenience function that provides information about number and users, uptime and loadavg.
- * 
+ *
  * @name sysinfo::uptimeString
  * @function
  * @param {boolean} humanReadable  if `true` only uptime is included in human readable format, otherwise all information is included.
@@ -318,7 +385,7 @@ sysinfo.uptimeString = function (humanReadable) {
 
 /**
  * Returns load average figures giving the number of jobs in the run queue (state R) or waiting for disk I/O (state D) averaged
- * over 1, 5 and 15 minutes. 
+ * over 1, 5 and 15 minutes.
  *
  * They are the same as the load average numbers given by uptime(1) and other programs.
  *
@@ -335,13 +402,13 @@ sysinfo.loadavg = function () {
   return args;
 }
 
-/** 
+/**
  * Returns the number of digits in `PID_MAX`.
  *
- * `PID_MAX` specifies the value at which PIDs wrap around (i.e., the value in this file is one greater than the maximum PID). 
- * The default value for this file, 32768, results in the same range of PIDs as on earlier kernels. 
+ * `PID_MAX` specifies the value at which PIDs wrap around (i.e., the value in this file is one greater than the maximum PID).
+ * The default value for this file, 32768, results in the same range of PIDs as on earlier kernels.
  *
- * On **32-bit platforms**, `32768` is the maximum value for pid_max. 
+ * On **32-bit platforms**, `32768` is the maximum value for pid_max.
  * On **64-bit systems**, pid_max can be set to any value up to `2^22` (`PID_MAX_LIMIT`, approximately 4 million).
  *
  * Source: `/proc/sys/kernel/pid_max`
@@ -358,7 +425,7 @@ sysinfo.getPidDigits = function () {
 
 /**
  * Returns kernel slab allocator statistics.
- * Frequently used objects in the Linux kernel (buffer heads, inodes, dentries, * etc.)  have their own cache.  
+ * Frequently used objects in the Linux kernel (buffer heads, inodes, dentries, * etc.)  have their own cache.
  *
  * For each slab cache, the cache name, the number of currently active objects,
  * the total number of available objects, the size of each object in bytes, the
@@ -368,7 +435,7 @@ sysinfo.getPidDigits = function () {
  * [slabinfo man page](http://linux.die.net/man/5/slabinfo)
  *
  * Source: `/proc/slabinfo `
- * 
+ *
  * ##### NOTE
  *
  * Since `/proc/slabinfo` is only accessible to root, you need to run the process with `sudo` to access slabinfo.

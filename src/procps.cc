@@ -135,6 +135,49 @@ NAN_METHOD(Sysinfo_Meminfo) {
   NanReturnUndefined();
 }
 
+NAN_METHOD(Sysinfo_Vminfo) {
+  NanScope();
+
+  NanCallback *cb = new NanCallback(args[0].As<Function>());
+
+  vminfo();
+
+  #define X(field) NanNew<Uint32>((uint32_t)field)
+  Local<Value> argv[] = {
+    /* all are unsigned long */
+      X(vm_nr_dirty)
+    , X(vm_nr_writeback)
+    , X(vm_nr_pagecache)
+    , X(vm_nr_page_table_pages)
+    , X(vm_nr_reverse_maps)
+    , X(vm_nr_mapped)
+    , X(vm_nr_slab)
+    , X(vm_pgpgin)
+    , X(vm_pgpgout)
+    , X(vm_pswpin)
+    , X(vm_pswpout)
+    , X(vm_pgalloc)
+    , X(vm_pgfree)
+    , X(vm_pgactivate)
+    , X(vm_pgdeactivate)
+    , X(vm_pgfault)
+    , X(vm_pgmajfault)
+    , X(vm_pgscan)
+    , X(vm_pgrefill)
+    , X(vm_pgsteal)
+    , X(vm_kswapd_steal)
+
+    // next 3 as defined by the 2.5.52 kernel
+    , X(vm_pageoutrun)
+    , X(vm_allocstall)
+  };
+  #undef X
+
+  cb->Call(sizeof(argv) / sizeof(argv[0]), argv);
+
+  NanReturnUndefined();
+}
+
 NAN_METHOD(Sysinfo_Hertz) {
   NanScope();
 
@@ -337,17 +380,18 @@ NAN_METHOD(Sysinfo_GetSlabInfo) {
 }
 
 void init(Handle<Object> exports) {
-  exports->Set(NanNew<String>("readproctab"), NanNew<FunctionTemplate>(Readproctab)->GetFunction());
-  exports->Set(NanNew<String>("sysinfo_meminfo"), NanNew<FunctionTemplate>(Sysinfo_Meminfo)->GetFunction());
-  exports->Set(NanNew<String>("sysinfo_Hertz"), NanNew<FunctionTemplate>(Sysinfo_Hertz)->GetFunction());
-  exports->Set(NanNew<String>("sysinfo_getstat"), NanNew<FunctionTemplate>(Sysinfo_Getstat)->GetFunction());
-  exports->Set(NanNew<String>("sysinfo_getdiskstat"), NanNew<FunctionTemplate>(Sysinfo_GetDiskStat)->GetFunction());
-  exports->Set(NanNew<String>("sysinfo_uptime"), NanNew<FunctionTemplate>(Sysinfo_Uptime)->GetFunction());
-  exports->Set(NanNew<String>("sysinfo_uptimesince"), NanNew<FunctionTemplate>(Sysinfo_UptimeSince)->GetFunction());
-  exports->Set(NanNew<String>("sysinfo_uptimestring"), NanNew<FunctionTemplate>(Sysinfo_UptimeString)->GetFunction());
-  exports->Set(NanNew<String>("sysinfo_loadavg"), NanNew<FunctionTemplate>(Sysinfo_Loadavg)->GetFunction());
-  exports->Set(NanNew<String>("sysinfo_getpiddigits"), NanNew<FunctionTemplate>(Sysinfo_GetPidDigits)->GetFunction());
-  exports->Set(NanNew<String>("sysinfo_getslabinfo"), NanNew<FunctionTemplate>(Sysinfo_GetSlabInfo)->GetFunction());
+  exports->Set(NanNew<String>("readproctab")          , NanNew<FunctionTemplate>(Readproctab)->GetFunction());
+  exports->Set(NanNew<String>("sysinfo_meminfo")      , NanNew<FunctionTemplate>(Sysinfo_Meminfo)->GetFunction());
+  exports->Set(NanNew<String>("sysinfo_vminfo")       , NanNew<FunctionTemplate>(Sysinfo_Vminfo)->GetFunction());
+  exports->Set(NanNew<String>("sysinfo_Hertz")        , NanNew<FunctionTemplate>(Sysinfo_Hertz)->GetFunction());
+  exports->Set(NanNew<String>("sysinfo_getstat")      , NanNew<FunctionTemplate>(Sysinfo_Getstat)->GetFunction());
+  exports->Set(NanNew<String>("sysinfo_getdiskstat")  , NanNew<FunctionTemplate>(Sysinfo_GetDiskStat)->GetFunction());
+  exports->Set(NanNew<String>("sysinfo_uptime")       , NanNew<FunctionTemplate>(Sysinfo_Uptime)->GetFunction());
+  exports->Set(NanNew<String>("sysinfo_uptimesince")  , NanNew<FunctionTemplate>(Sysinfo_UptimeSince)->GetFunction());
+  exports->Set(NanNew<String>("sysinfo_uptimestring") , NanNew<FunctionTemplate>(Sysinfo_UptimeString)->GetFunction());
+  exports->Set(NanNew<String>("sysinfo_loadavg")      , NanNew<FunctionTemplate>(Sysinfo_Loadavg)->GetFunction());
+  exports->Set(NanNew<String>("sysinfo_getpiddigits") , NanNew<FunctionTemplate>(Sysinfo_GetPidDigits)->GetFunction());
+  exports->Set(NanNew<String>("sysinfo_getslabinfo")  , NanNew<FunctionTemplate>(Sysinfo_GetSlabInfo)->GetFunction());
 }
 
 NODE_MODULE(procps, init)
