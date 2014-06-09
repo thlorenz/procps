@@ -22,6 +22,7 @@ Unixes with a `/proc` directory only. Tested on `arch linux` and `ubuntu`.
     - [readproctab(flags_) → {Array.<Object>}](#readproctabflags_-→-arrayobject)
     - [sysinfo::getdiskstat() → {Object}](#sysinfogetdiskstat-→-object)
     - [sysinfo::getPidDigits() → {number}](#sysinfogetpiddigits-→-number)
+    - [sysinfo::getslabinfo() → {Array.<Object>}](#sysinfogetslabinfo-→-arrayobject)
     - [sysinfo::getstat() → {Object}](#sysinfogetstat-→-object)
     - [sysinfo::loadavg() → {Array.<number>}](#sysinfoloadavg-→-arraynumber)
     - [sysinfo::meminfo(unit) → {Object}](#sysinfomeminfounit-→-object)
@@ -275,7 +276,7 @@ On <strong>64-bit systems</strong>, pid_max can be set to any value up to <code>
 <li>
 <a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js">index.js</a>
 <span>, </span>
-<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L340">lineno 340</a>
+<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L338">lineno 338</a>
 </li>
 </ul></dd>
 </dl>
@@ -289,6 +290,53 @@ Type
 </dt>
 <dd>
 <span class="param-type">number</span>
+</dd>
+</dl>
+</dd>
+<dt>
+<h4 class="name" id="sysinfo::getslabinfo"><span class="type-signature"></span>sysinfo::getslabinfo<span class="signature">()</span><span class="type-signature"> &rarr; {Array.&lt;Object>}</span></h4>
+</dt>
+<dd>
+<div class="description">
+<p>Returns kernel slab allocator statistics.
+Frequently used objects in the Linux kernel (buffer heads, inodes, dentries, * etc.)  have their own cache.  </p>
+<p>For each slab cache, the cache name, the number of currently active objects,
+the total number of available objects, the size of each object in bytes, the
+number of pages with at least one active object, the total number of
+allocated pages, and the number of pages per slab are given.</p>
+<p><a href="http://linux.die.net/man/5/slabinfo">slabinfo man page</a></p>
+<p>Source: <code>/proc/slabinfo</code></p>
+<h5>NOTE</h5>
+<p>Since <code>/proc/slabinfo</code> is only accessible to root, you need to run the process with <code>sudo</code> to access slabinfo.
+It is therefore recommended to use this only when writing a script, <strong>please NEVER run your server as root!</strong></p>
+</div>
+<dl class="details">
+<dt class="tag-source">Source:</dt>
+<dd class="tag-source"><ul class="dummy">
+<li>
+<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js">index.js</a>
+<span>, </span>
+<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L365">lineno 365</a>
+</li>
+</ul></dd>
+</dl>
+<h5>Returns:</h5>
+<div class="param-desc">
+<p>each with the following properties:</p>
+<ul>
+<li><strong>name</strong>: cache name</li>
+<li><strong>numObjs</strong>: the total number of available objects</li>
+<li><strong>objsperslab</strong>: the number of objects per slab</li>
+<li><strong>objsize</strong>: the size of each object in bytes</li>
+<li><strong>activeObjs</strong>: the number of currently active objects</li>
+</ul>
+</div>
+<dl>
+<dt>
+Type
+</dt>
+<dd>
+<span class="param-type">Array.&lt;Object></span>
 </dd>
 </dl>
 </dd>
@@ -360,7 +408,7 @@ over 1, 5 and 15 minutes. </p>
 <li>
 <a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js">index.js</a>
 <span>, </span>
-<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L321">lineno 321</a>
+<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L319">lineno 319</a>
 </li>
 </ul></dd>
 </dl>
@@ -539,7 +587,7 @@ Type
 <li>
 <a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js">index.js</a>
 <span>, </span>
-<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L306">lineno 306</a>
+<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L304">lineno 304</a>
 </li>
 </ul></dd>
 </dl>

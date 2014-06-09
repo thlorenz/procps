@@ -187,4 +187,23 @@ public:
   Local<Value> Wrap();
 };
 
+class SlabCache {
+  struct slab_cache _slab;
+
+public:
+  SlabCache(struct slab_cache slab) : _slab(slab) {}
+
+#define X(Prop) \
+  static _NAN_GETTER_RETURN_TYPE Prop(Local<String> property, _NAN_GETTER_ARGS_TYPE);
+
+  X(activeObjs)
+  X(numObjs)
+  X(objsize)
+  X(objperslab)
+  X(name)
+#undef X
+
+  Local<Value> Wrap();
+};
+
 #endif

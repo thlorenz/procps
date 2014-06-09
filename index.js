@@ -299,8 +299,6 @@ sysinfo.uptimeSince = function uptimeSince() {
     , yday : args[6]
     , wday : args[7]
   }
-
-  return { uptime: args[0], idle: args[1] };
 }
 
 /**
@@ -356,4 +354,38 @@ sysinfo.getPidDigits = function () {
   var args;
   procps.sysinfo_getpiddigits(function () { args = arguments; });
   return args[0];
+}
+
+/**
+ * Returns kernel slab allocator statistics.
+ * Frequently used objects in the Linux kernel (buffer heads, inodes, dentries, * etc.)  have their own cache.  
+ *
+ * For each slab cache, the cache name, the number of currently active objects,
+ * the total number of available objects, the size of each object in bytes, the
+ * number of pages with at least one active object, the total number of
+ * allocated pages, and the number of pages per slab are given.
+ *
+ * [slabinfo man page](http://linux.die.net/man/5/slabinfo)
+ *
+ * Source: `/proc/slabinfo `
+ * 
+ * ##### NOTE
+ *
+ * Since `/proc/slabinfo` is only accessible to root, you need to run the process with `sudo` to access slabinfo.
+ * It is therefore recommended to use this only when writing a script, **please NEVER run your server as root!**
+ *
+ * @name sysinfo::getslabinfo
+ * @function
+ * @return {Array.<Object>} each with the following properties:
+ *
+ * - **name**: cache name
+ * - **numObjs**: the total number of available objects
+ * - **objsperslab**: the number of objects per slab
+ * - **objsize**: the size of each object in bytes
+ * - **activeObjs**: the number of currently active objects
+ */
+sysinfo.getslabinfo = function uptimeSince() {
+  var args;
+  procps.sysinfo_getslabinfo(function () { args = Array.prototype.slice.call(arguments); });
+  return args;
 }

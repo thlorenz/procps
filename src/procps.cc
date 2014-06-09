@@ -22,11 +22,12 @@ using v8::Array;
 using v8::Value;
 using v8::Function;
 
+#define MAX_PROCS 5000
+#define MAX_SLABS 1000
+
 /*
  * readproc
  */
-
-#define MAX_PROCS 5000
 
 /*
   * By default readproc will consider all processes as valid to parse
@@ -316,6 +317,25 @@ NAN_METHOD(Sysinfo_GetPidDigits) {
   NanReturnUndefined();
 }
 
+NAN_METHOD(Sysinfo_GetSlabInfo) {
+  NanScope();
+  NanCallback *cb = new NanCallback(args[0].As<Function>());
+	struct slab_cache *slabs;
+
+  unsigned int nSlab = getslabinfo(&slabs);
+  assert(nSlab <= MAX_SLABS && "exceeded MAX_SLABS");
+
+  Local<Value> argv[MAX_SLABS];
+  for (unsigned int i = 0; i < nSlab; i++) {
+    SlabCache *sc = new SlabCache(slabs[i]);
+    argv[i] = sc->Wrap();
+  }
+
+  cb->Call(nSlab, argv);
+
+  NanReturnUndefined();
+}
+
 void init(Handle<Object> exports) {
   exports->Set(NanNew<String>("readproctab"), NanNew<FunctionTemplate>(Readproctab)->GetFunction());
   exports->Set(NanNew<String>("sysinfo_meminfo"), NanNew<FunctionTemplate>(Sysinfo_Meminfo)->GetFunction());
@@ -327,6 +347,7 @@ void init(Handle<Object> exports) {
   exports->Set(NanNew<String>("sysinfo_uptimestring"), NanNew<FunctionTemplate>(Sysinfo_UptimeString)->GetFunction());
   exports->Set(NanNew<String>("sysinfo_loadavg"), NanNew<FunctionTemplate>(Sysinfo_Loadavg)->GetFunction());
   exports->Set(NanNew<String>("sysinfo_getpiddigits"), NanNew<FunctionTemplate>(Sysinfo_GetPidDigits)->GetFunction());
+  exports->Set(NanNew<String>("sysinfo_getslabinfo"), NanNew<FunctionTemplate>(Sysinfo_GetSlabInfo)->GetFunction());
 }
 
 NODE_MODULE(procps, init)
