@@ -19,17 +19,17 @@ Unixes with a `/proc` directory only. Tested on `arch linux` and `ubuntu`.
 - [API](#api)
     - [readproctab::flags](#readproctabflags)
     - [readproctab::flagsFillAll](#readproctabflagsfillall)
-    - [readproctab(flags_) → {Array.<Object>}](#readproctabflags_-→-arrayobject)
-    - [sysinfo::getdiskstat() → {Object}](#sysinfogetdiskstat-→-object)
-    - [sysinfo::getPidDigits() → {number}](#sysinfogetpiddigits-→-number)
-    - [sysinfo::getslabinfo() → {Array.<Object>}](#sysinfogetslabinfo-→-arrayobject)
-    - [sysinfo::getstat() → {Object}](#sysinfogetstat-→-object)
-    - [sysinfo::loadavg() → {Array.<number>}](#sysinfoloadavg-→-arraynumber)
-    - [sysinfo::meminfo(unit) → {Object}](#sysinfomeminfounit-→-object)
-    - [sysinfo::uptime() → {Object}](#sysinfouptime-→-object)
-    - [sysinfo::uptimeSince() → {Object}](#sysinfouptimesince-→-object)
-    - [sysinfo::uptimeString(humanReadable) → {String}](#sysinfouptimestringhumanreadable-→-string)
-    - [vminfo() → {Object}](#vminfo-→-object)
+    - [readproctab(flags_) → {Array.<Object>}](#readproctabflags_--arrayobject)
+    - [sysinfo::getdiskstat() → {Object}](#sysinfogetdiskstat--object)
+    - [sysinfo::getPidDigits() → {number}](#sysinfogetpiddigits--number)
+    - [sysinfo::getslabinfo() → {Array.<Object>}](#sysinfogetslabinfo--arrayobject)
+    - [sysinfo::getstat() → {Object}](#sysinfogetstat--object)
+    - [sysinfo::loadavg() → {Array.<number>}](#sysinfoloadavg--arraynumber)
+    - [sysinfo::meminfo(unit) → {Object}](#sysinfomeminfounit--object)
+    - [sysinfo::uptime() → {Object}](#sysinfouptime--object)
+    - [sysinfo::uptimeSince() → {Object}](#sysinfouptimesince--object)
+    - [sysinfo::uptimeString(humanReadable) → {String}](#sysinfouptimestringhumanreadable--string)
+    - [vminfo() → {Object}](#vminfo--object)
 - [LICENSE](#license)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -116,9 +116,9 @@ Use these in order to fill/loose specific process properties.</p>
 <dt class="tag-source">Source:</dt>
 <dd class="tag-source"><ul class="dummy">
 <li>
-<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js">index.js</a>
+<a href="https://github.com/thlorenz/procps/blob/master/index.js">index.js</a>
 <span>, </span>
-<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L56">lineno 56</a>
+<a href="https://github.com/thlorenz/procps/blob/master/index.js#L56">lineno 56</a>
 </li>
 </ul></dd>
 </dl>
@@ -136,9 +136,9 @@ Use them as a starting point to turn properties off selectively, i.e.:</p>
 <dt class="tag-source">Source:</dt>
 <dd class="tag-source"><ul class="dummy">
 <li>
-<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js">index.js</a>
+<a href="https://github.com/thlorenz/procps/blob/master/index.js">index.js</a>
 <span>, </span>
-<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L64">lineno 64</a>
+<a href="https://github.com/thlorenz/procps/blob/master/index.js#L64">lineno 64</a>
 </li>
 </ul></dd>
 </dl>
@@ -183,9 +183,9 @@ Use them as a starting point to turn properties off selectively, i.e.:</p>
 <dt class="tag-source">Source:</dt>
 <dd class="tag-source"><ul class="dummy">
 <li>
-<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js">index.js</a>
+<a href="https://github.com/thlorenz/procps/blob/master/index.js">index.js</a>
 <span>, </span>
-<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L35">lineno 35</a>
+<a href="https://github.com/thlorenz/procps/blob/master/index.js#L35">lineno 35</a>
 </li>
 </ul></dd>
 </dl>
@@ -240,9 +240,9 @@ readsSectors: 483762 },
 <dt class="tag-source">Source:</dt>
 <dd class="tag-source"><ul class="dummy">
 <li>
-<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js">index.js</a>
+<a href="https://github.com/thlorenz/procps/blob/master/index.js">index.js</a>
 <span>, </span>
-<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L273">lineno 273</a>
+<a href="https://github.com/thlorenz/procps/blob/master/index.js#L269">lineno 269</a>
 </li>
 </ul></dd>
 </dl>
@@ -275,9 +275,9 @@ On <strong>64-bit systems</strong>, pid_max can be set to any value up to <code>
 <dt class="tag-source">Source:</dt>
 <dd class="tag-source"><ul class="dummy">
 <li>
-<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js">index.js</a>
+<a href="https://github.com/thlorenz/procps/blob/master/index.js">index.js</a>
 <span>, </span>
-<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L405">lineno 405</a>
+<a href="https://github.com/thlorenz/procps/blob/master/index.js#L401">lineno 401</a>
 </li>
 </ul></dd>
 </dl>
@@ -315,9 +315,9 @@ It is therefore recommended to use this only when writing a script, <strong>plea
 <dt class="tag-source">Source:</dt>
 <dd class="tag-source"><ul class="dummy">
 <li>
-<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js">index.js</a>
+<a href="https://github.com/thlorenz/procps/blob/master/index.js">index.js</a>
 <span>, </span>
-<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L426">lineno 426</a>
+<a href="https://github.com/thlorenz/procps/blob/master/index.js#L422">lineno 422</a>
 </li>
 </ul></dd>
 </dl>
@@ -354,9 +354,9 @@ Type
 <dt class="tag-source">Source:</dt>
 <dd class="tag-source"><ul class="dummy">
 <li>
-<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js">index.js</a>
+<a href="https://github.com/thlorenz/procps/blob/master/index.js">index.js</a>
 <span>, </span>
-<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L212">lineno 212</a>
+<a href="https://github.com/thlorenz/procps/blob/master/index.js#L208">lineno 208</a>
 </li>
 </ul></dd>
 </dl>
@@ -407,9 +407,9 @@ over 1, 5 and 15 minutes.</p>
 <dt class="tag-source">Source:</dt>
 <dd class="tag-source"><ul class="dummy">
 <li>
-<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js">index.js</a>
+<a href="https://github.com/thlorenz/procps/blob/master/index.js">index.js</a>
 <span>, </span>
-<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L386">lineno 386</a>
+<a href="https://github.com/thlorenz/procps/blob/master/index.js#L382">lineno 382</a>
 </li>
 </ul></dd>
 </dl>
@@ -460,9 +460,9 @@ Type
 <dt class="tag-source">Source:</dt>
 <dd class="tag-source"><ul class="dummy">
 <li>
-<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js">index.js</a>
+<a href="https://github.com/thlorenz/procps/blob/master/index.js">index.js</a>
 <span>, </span>
-<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L86">lineno 86</a>
+<a href="https://github.com/thlorenz/procps/blob/master/index.js#L86">lineno 86</a>
 </li>
 </ul></dd>
 </dl>
@@ -491,9 +491,9 @@ Very similar to <code>uptime -s</code> command.</p>
 <dt class="tag-source">Source:</dt>
 <dd class="tag-source"><ul class="dummy">
 <li>
-<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js">index.js</a>
+<a href="https://github.com/thlorenz/procps/blob/master/index.js">index.js</a>
 <span>, </span>
-<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L319">lineno 319</a>
+<a href="https://github.com/thlorenz/procps/blob/master/index.js#L315">lineno 315</a>
 </li>
 </ul></dd>
 </dl>
@@ -527,9 +527,9 @@ The result is structured into years, months, etc. for easy logging.</p>
 <dt class="tag-source">Source:</dt>
 <dd class="tag-source"><ul class="dummy">
 <li>
-<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js">index.js</a>
+<a href="https://github.com/thlorenz/procps/blob/master/index.js">index.js</a>
 <span>, </span>
-<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L337">lineno 337</a>
+<a href="https://github.com/thlorenz/procps/blob/master/index.js#L333">lineno 333</a>
 </li>
 </ul></dd>
 </dl>
@@ -586,9 +586,9 @@ Type
 <dt class="tag-source">Source:</dt>
 <dd class="tag-source"><ul class="dummy">
 <li>
-<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js">index.js</a>
+<a href="https://github.com/thlorenz/procps/blob/master/index.js">index.js</a>
 <span>, </span>
-<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L371">lineno 371</a>
+<a href="https://github.com/thlorenz/procps/blob/master/index.js#L367">lineno 367</a>
 </li>
 </ul></dd>
 </dl>
@@ -617,9 +617,9 @@ Type
 <dt class="tag-source">Source:</dt>
 <dd class="tag-source"><ul class="dummy">
 <li>
-<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js">index.js</a>
+<a href="https://github.com/thlorenz/procps/blob/master/index.js">index.js</a>
 <span>, </span>
-<a href="https://github.com/thlorenz/procps/blob/sysinfo/index.js#L133">lineno 133</a>
+<a href="https://github.com/thlorenz/procps/blob/master/index.js#L133">lineno 133</a>
 </li>
 </ul></dd>
 </dl>
