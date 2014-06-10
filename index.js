@@ -197,10 +197,6 @@ sysinfo.vminfo = function () {
     }, {})
 }
 
-function inspect(obj, depth) {
-  console.error(require('util').inspect(obj, false, depth || 5, true));
-}
-
 /*
  * Some values in /proc are expressed in units of 1/HZ seconds, where HZ
  * is the kernel clock tick rate.
