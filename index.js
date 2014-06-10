@@ -447,7 +447,7 @@ sysinfo.getPidDigits = function () {
  * - **objsize**: the size of each object in bytes
  * - **activeObjs**: the number of currently active objects
  */
-sysinfo.getslabinfo = function uptimeSince() {
+sysinfo.getslabinfo = function () {
   var args;
   procps.sysinfo_getslabinfo(function () { args = Array.prototype.slice.call(arguments); });
   return args;
