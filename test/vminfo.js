@@ -11,8 +11,8 @@ test('\nvminfo', function (t) {
   var r = vminfo();  
   t.ok(isFinite(r.nrDirty), 'has number nrDirty')
   t.ok(isFinite(r.nrMapped), 'has number zero nrMapped')
-  t.ok(r.pgpgin > 0, 'has non zero pgpgin')
-  t.ok(r.pgpgout > 0, 'has non zero nrDirty')
+  t.ok(isFinite(r.pgpgin), 'has pgpgin')
+  t.ok(r.pgpgout > 0, 'has non zero pgpgout')
   t.ok(isFinite(r.pgalloc), 'has number pgalloc')
   t.ok(isFinite(r.pgfree), 'has number pgfree')
   t.ok(isFinite(r.pgactivate), 'has number pgactivate')

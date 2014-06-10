@@ -7,6 +7,8 @@ function inspect(obj, depth) {
   console.error(require('util').inspect(obj, false, depth || 5, true));
 }
 
+// on travis there is no access to /proc/diskstats (http://askubuntu.com/a/257517/53802)
+if (!process.env.TRAVIS)
 test('\ngetdiskstat', function (t) {
   var r = getdiskstat();
   var disks = r.disks
