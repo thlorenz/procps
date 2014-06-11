@@ -1,7 +1,7 @@
 {
   "name": "procps",
   "version": "0.3.1",
-  "description": "procps bindings",
+  "description": "Node.js bindings for procps, a library that provides information about processes using the `/proc` filesystem",
   "main": "index.js",
   "directories": {
     "example": "example"
