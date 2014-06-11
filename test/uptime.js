@@ -39,7 +39,7 @@ test('\nuptimeString', function (t) {
   // FIXME: why is human readable flag not working on travis?
   if (!process.env.TRAVIS) {
     var hr = sysinfo.uptimeString(true);
-    t.similar(hr, /\d+ (hours|minutes)/, 'human readable uptime string contains hours or minutes')
+    t.similar(hr, /\d+ (day|hours|minutes)/, 'human readable uptime string contains days, hours or minutes')
   }
 
   t.end()
