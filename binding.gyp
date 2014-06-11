@@ -37,7 +37,7 @@
               , '-DPACKAGE_VERSION=\"3.3.9\"'
               , '-DBUILD_WITH_WHINE=1'
             ],
-            'cflags!'   : [ '-fno-exceptions', '-fno-tree-vrp' ],
+            'cflags!'   : [ '-fno-exceptions', '-fno-tree-vrp', '-fno-tree-sink' ],
 
             'cflags_c'  : [ '--std=gnu99', '-Wno-string-plus-int', '-Wno-sign-compare' ],
             'cflags_cc' : [ '-fexceptions', '-frtti' ],
