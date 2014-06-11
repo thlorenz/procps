@@ -1,6 +1,13 @@
 'use strict';
 
-var procps = require('./build/Release/procps');
+var procps;
+try {
+  procps = require('./build/Release/procps');
+} catch (e) {
+  // procps is not supported on this platform which is why it didn't build
+  // therefore we'll supply stubs for all methods in order to not throw errors
+  procps = require('./procps-stub')
+}
 
 /*
  * readproc
